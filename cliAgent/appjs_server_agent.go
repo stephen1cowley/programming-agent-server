@@ -20,7 +20,7 @@ var editAppCSSResp ArgsAppCSS
 var newFileResp ArgsCreateFile
 var libsResp ArgsLibraries
 
-func AppJSTool() {
+func CliAgent() {
 
 	// Start off by cleaning the React App source code
 	cmd := exec.Command("shell_script/onStartup.sh")

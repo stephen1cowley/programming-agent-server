@@ -1,4 +1,4 @@
-module main
+module github.com/stephen1cowley/programming-agent-server
 
 go 1.22.5
 
