@@ -202,6 +202,10 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+	} else if r.Method == http.MethodOptions {
+		// Handle preflight request
+		w.WriteHeader(http.StatusOK)
+		return
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprintln(w, "Method not allowed") // server debug message
