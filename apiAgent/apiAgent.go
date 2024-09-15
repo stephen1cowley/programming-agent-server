@@ -227,6 +227,9 @@ func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodPut {
 		onRestart()
+	} else if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
