@@ -73,7 +73,7 @@ func onRestart() {
 	currDirState = funcTools.DirectoryState{} // i.e. initially empty
 	startSysMsg = openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleSystem,
-		Content: "You are a helpful software engineer. Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles. You are able to change App.js and App.css. You are able to create new JavaScript files to assist you in creating the application, ensure these are correctly imported into App.js.",
+		Content: "You are a helpful software engineer. Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles. You are able to change App.js and App.css. You are able to create new JavaScript files to assist you in creating the application, ensure these are correctly imported into App.js. You also have access to an S3 bucket for images: https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/.",
 	} // Starting system message always prepended to list of messages
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
 }
