@@ -32,6 +32,20 @@ var newFileResp funcTools.ArgsCreateFile
 var libsResp funcTools.ArgsLibraries
 
 func ApiAgent() {
+	onRestart()
+
+	// Now we can begin the conversation by opening up the server!
+	http.HandleFunc("/api/message", apiMessageHandler)
+	http.HandleFunc("PUT /api/restart", apiRestartHandler)
+
+	fmt.Println("Server listening on :8080")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Printf("Error starting server: %v\n", err)
+	}
+}
+
+func onRestart() {
 	// Start off by cleaning the React App source code
 	cmd := exec.Command("shell_script/onStartup.sh")
 	output, err := cmd.Output()
@@ -51,15 +65,6 @@ func ApiAgent() {
 		Content: "You are a helpful software engineer. Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles. You are able to change App.js and App.css. You are able to create new JavaScript files to assist you in creating the application, ensure these are correctly imported into App.js.",
 	} // Starting system message always prepended to list of messages
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
-
-	// Now we can begin the conversation by opening up the server!
-	http.HandleFunc("/api/message", apiMessageHandler)
-
-	fmt.Println("Server listening on :8080")
-	err = http.ListenAndServe(":8080", nil)
-	if err != nil {
-		fmt.Printf("Error starting server: %v\n", err)
-	}
 }
 
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
@@ -195,4 +200,9 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprintln(w, "Method not allowed") // server debug message
 	}
+}
+
+func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
+	onRestart()
+	w.WriteHeader(http.StatusOK)
 }
