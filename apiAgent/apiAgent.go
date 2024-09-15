@@ -183,7 +183,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(messages)
 
 		// Create output and respond (same as input schema for now...)
-		jsonResponse := msgSchema{Message: responseMessage}
+		jsonResponse := msgSchema{Message: content}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
@@ -192,15 +192,6 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprintln(w, "Method not allowed") // server debug message
-	}
-}
-
-func testHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		fmt.Fprintln(w, "Post request received")
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprintln(w, "Method not allowed") // server debug message
