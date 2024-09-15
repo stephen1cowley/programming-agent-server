@@ -74,7 +74,6 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Process data after successful unmarshalling
-		responseMessage := "Received POST request with data: " + requestData.Message
 		text := requestData.Message
 		messages = append(messages, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleUser,
