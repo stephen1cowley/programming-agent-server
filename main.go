@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 
+	apiAgent "github.com/stephen1cowley/programming-agent-server/apiAgent"
 	cliAgent "github.com/stephen1cowley/programming-agent-server/cliAgent"
 )
 
@@ -16,6 +17,7 @@ func main() {
 		fmt.Println("Running CLI interface...")
 		cliAgent.CliAgent()
 	} else if *runModeFlag == "server" {
-		fmt.Println("Setting up server...")
+		fmt.Println("Running API server...")
+		apiAgent.ApiAgent()
 	}
 }
