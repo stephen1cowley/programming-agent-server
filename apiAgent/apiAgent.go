@@ -84,7 +84,6 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 	if r.Method == http.MethodPost {
-		fmt.Fprintln(w, "Post request received") // server debug message
 
 		var requestData msgsSchema
 		if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
