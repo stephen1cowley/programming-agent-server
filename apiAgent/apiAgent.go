@@ -47,7 +47,7 @@ func ApiAgent() {
 
 	// Now we can begin the conversation by opening up the server!
 	http.HandleFunc("/api/message", apiMessageHandler)
-	http.HandleFunc("PUT /api/restart", apiRestartHandler)
+	http.HandleFunc("/api/restart", apiRestartHandler)
 
 	fmt.Println("Server listening on :8080")
 	err := http.ListenAndServe(":8080", nil)
@@ -221,7 +221,14 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
-	onRestart()
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Replace with your allowed origin(s)
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodPut {
+		onRestart()
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
