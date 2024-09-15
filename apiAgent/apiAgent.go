@@ -53,7 +53,6 @@ func ApiAgent() {
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
 
 	// Now we can begin the conversation by opening up the server!
-	http.HandleFunc("/", testHandler)
 	http.HandleFunc("/api/message", apiMessageHandler)
 
 	fmt.Println("Server listening on :8080")
