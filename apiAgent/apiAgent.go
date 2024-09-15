@@ -34,6 +34,12 @@ var libsResp funcTools.ArgsLibraries
 func ApiAgent() {
 	onRestart()
 
+	// Create a new router
+	router := http.NewServeMux()
+
+	// Apply CORS middleware to all routes
+	http.Handle("/", corsMiddleware(router))
+
 	// Now we can begin the conversation by opening up the server!
 	http.HandleFunc("/api/message", apiMessageHandler)
 	http.HandleFunc("PUT /api/restart", apiRestartHandler)
@@ -205,4 +211,16 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 	onRestart()
 	w.WriteHeader(http.StatusOK)
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost") // Replace with your allowed origin(s)
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		// Continue with the next handler
+		next.ServeHTTP(w, r)
+	})
 }
