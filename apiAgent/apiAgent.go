@@ -204,6 +204,9 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	} else if r.Method == http.MethodOptions {
 		// Handle preflight request
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Replace with your allowed origin(s)
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.WriteHeader(http.StatusOK)
 		return
 	} else {
