@@ -16,7 +16,12 @@ import (
 )
 
 type msgSchema struct {
-	Message string `json:"message"`
+	Role string `json:"role"`
+	Text string `json:"text"`
+}
+
+type msgsSchema struct {
+	Messages []msgSchema `json:"messages"`
 }
 
 // Global variables (for now...)
@@ -81,7 +86,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		fmt.Fprintln(w, "Post request received") // server debug message
 
-		var requestData msgSchema
+		var requestData msgsSchema
 		if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "Error decoding request data:", err)
@@ -89,7 +94,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Process data after successful unmarshalling
-		text := requestData.Message
+		text := requestData.Messages[0].Text
 		messages = append(messages, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleUser,
 			Content: text,
@@ -197,7 +202,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(messages)
 
 		// Create output and respond (same as input schema for now...)
-		jsonResponse := msgSchema{Message: content}
+		jsonResponse := msgSchema{Role: "ai", Text: content}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
