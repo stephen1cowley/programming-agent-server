@@ -1,4 +1,4 @@
-package cliAgent
+package funcTools
 
 import (
 	"github.com/sashabaranov/go-openai"

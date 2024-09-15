@@ -13,12 +13,13 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/sashabaranov/go-openai"
+	funcTools "github.com/stephen1cowley/programming-agent-server/funcTools"
 )
 
-var editAppJSResp ArgsAppJS
-var editAppCSSResp ArgsAppCSS
-var newFileResp ArgsCreateFile
-var libsResp ArgsLibraries
+var editAppJSResp funcTools.ArgsAppJS
+var editAppCSSResp funcTools.ArgsAppCSS
+var newFileResp funcTools.ArgsCreateFile
+var libsResp funcTools.ArgsLibraries
 
 func CliAgent() {
 
@@ -31,7 +32,7 @@ func CliAgent() {
 	}
 	fmt.Println(string(output))
 
-	currDirState := DirectoryState{
+	currDirState := funcTools.DirectoryState{
 		AppJSCode:  "",
 		AppCSSCode: "",
 	}
@@ -49,7 +50,7 @@ func CliAgent() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Conversation")
 	fmt.Println("---------------------")
-	myTools := []openai.Tool{AppJSEdit, AppCSSEdit, NewJsonFile}
+	myTools := []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
 
 	// Define a regular expression pattern to match everything between backticks
 	re := regexp.MustCompile("```[^```]+```")
@@ -111,21 +112,21 @@ func CliAgent() {
 			case "app_js_edit_func":
 				fmt.Println("Updating App.js ...")
 				json.Unmarshal([]byte(val.Function.Arguments), &editAppJSResp)
-				EditAppJS(
+				funcTools.EditAppJS(
 					editAppJSResp.AppJSCode,
 				)
 				currDirState.AppJSCode = editAppJSResp.AppJSCode
 			case "app_css_edit_func":
 				fmt.Println("Updating App.css ...")
 				json.Unmarshal([]byte(val.Function.Arguments), &editAppCSSResp)
-				EditAppCSS(
+				funcTools.EditAppCSS(
 					editAppCSSResp.AppCSSCode,
 				)
 				currDirState.AppCSSCode = editAppCSSResp.AppCSSCode
 			case "new_js_file_func":
 				fmt.Println("Creating new JS file ...")
 				json.Unmarshal([]byte(val.Function.Arguments), &newFileResp)
-				CreateJSFile(
+				funcTools.CreateJSFile(
 					newFileResp,
 				)
 				for i, file := range currDirState.OtherFiles {
@@ -137,14 +138,14 @@ func CliAgent() {
 				// File doesn't yet exist in the list; append this new file.
 				currDirState.OtherFiles = append(
 					currDirState.OtherFiles,
-					FileState{
+					funcTools.FileState{
 						FileName: newFileResp.FileName,
 						FileCode: newFileResp.FileContent,
 					})
 			case "libraries_func":
 				fmt.Println("Importing libraries ...")
 				json.Unmarshal([]byte(val.Function.Arguments), &libsResp)
-				InstallLibraries(
+				funcTools.InstallLibraries(
 					libsResp,
 				)
 			}
