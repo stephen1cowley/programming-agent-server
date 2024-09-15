@@ -54,7 +54,7 @@ func ApiAgent() {
 
 	// Now we can begin the conversation by opening up the server!
 	http.HandleFunc("/", testHandler)
-	http.HandleFunc("/api/message/", apiMessageHandler)
+	http.HandleFunc("/api/message", apiMessageHandler)
 
 	fmt.Println("Server listening on :8080")
 	err = http.ListenAndServe(":8080", nil)
@@ -64,7 +64,6 @@ func ApiAgent() {
 }
 
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(currDirState)
 	if r.Method == http.MethodPost {
 		fmt.Fprintln(w, "Post request received") // server debug message
 
