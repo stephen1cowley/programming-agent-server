@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Installing dependencies..."
+      - npm install -y golang
+  build:
+    commands:
+      - echo "Building the Go application..."
+      - GOOS=linux GOARCH=amd64 go build -o server main.go
+  post_build:
+    commands:
+      - echo "Build completed."
+
+artifacts:
+  files:
+    - server
