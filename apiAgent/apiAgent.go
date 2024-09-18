@@ -58,7 +58,7 @@ func ApiAgent() {
 
 func onRestart() {
 	// Start off by cleaning the React App source code
-	cmd := exec.Command("shell_script/onStartup.sh")
+	cmd := exec.Command("~/shell_script/onStartup.sh")
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Error:", err)
