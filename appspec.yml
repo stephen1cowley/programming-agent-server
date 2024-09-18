@@ -1,7 +1,7 @@
 version: 0.0
 os: linux
 files:
-  - source: ./server
+  - source: /server
     destination: /home/ubuntu/
 
 permissions:
@@ -11,7 +11,27 @@ permissions:
     group: ubuntu
 
 hooks:
+  BeforeInstall:
+    - location: scripts/before_install.sh
+      timeout: 300
+      runas: ubuntu
+
   AfterInstall:
-    - location: scripts/start_server.sh
+    - location: scripts/after_install.sh
+      timeout: 300
+      runas: ubuntu
+
+  ApplicationStart:
+    - location: scripts/application_start.sh
+      timeout: 300
+      runas: ubuntu
+
+  ApplicationStop:
+    - location: scripts/application_stop.sh
+      timeout: 300
+      runas: ubuntu
+
+  ValidateService:
+    - location: scripts/validate_service.sh
       timeout: 300
       runas: ubuntu
