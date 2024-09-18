@@ -11,6 +11,11 @@ permissions:
     group: ubuntu
 
 hooks:
+  ApplicationStop:
+    - location: scripts/application_stop.sh
+      timeout: 300
+      runas: ubuntu
+
   BeforeInstall:
     - location: scripts/before_install.sh
       timeout: 300
@@ -23,11 +28,6 @@ hooks:
 
   ApplicationStart:
     - location: scripts/application_start.sh
-      timeout: 300
-      runas: ubuntu
-
-  ApplicationStop:
-    - location: scripts/application_stop.sh
       timeout: 300
       runas: ubuntu
 
