@@ -9,3 +9,4 @@ $1
 EOL
 
 echo "App.css file updated at ~/my-react-app/src/App.css"
+# TEST CHANGE
