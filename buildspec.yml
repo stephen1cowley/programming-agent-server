@@ -4,7 +4,12 @@ phases:
   install:
     commands:
       - echo "Installing dependencies..."
-      - sudo apt install golang-go
+      - go version
+  pre_build:
+    commands:
+      # Install Go module dependencies
+      - echo "Fetching Go modules"
+      - go mod tidy
   build:
     commands:
       - echo "Building the Go application..."
