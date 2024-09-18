@@ -3,6 +3,13 @@ os: linux
 files:
   - source: ./server
     destination: /home/ubuntu/
+
+permissions:
+  - object: /
+    pattern: "**"
+    owner: ubuntu
+    group: ubuntu
+
 hooks:
   AfterInstall:
     - location: scripts/start_server.sh
