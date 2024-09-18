@@ -15,7 +15,7 @@ hooks:
   #   - location: scripts/application_stop.sh
   #     timeout: 300
   #     runas: ubuntu
-  ##n TEST
+  ##n TEST 2
 
   BeforeInstall:
     - location: scripts/before_install.sh
