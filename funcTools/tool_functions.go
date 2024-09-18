@@ -7,7 +7,7 @@ import (
 
 func EditAppJS(AppJSCode string) {
 	// Run the shell script with the variable value
-	cmd := exec.Command("shell_script/editAppJS.sh", AppJSCode)
+	cmd := exec.Command("~/shell_script/editAppJS.sh", AppJSCode)
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -20,7 +20,7 @@ func EditAppJS(AppJSCode string) {
 
 func EditAppCSS(AppCSSCode string) {
 	// Run the shell script with the variable value
-	cmd := exec.Command("shell_script/editAppCSS.sh", AppCSSCode)
+	cmd := exec.Command("~/shell_script/editAppCSS.sh", AppCSSCode)
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -33,7 +33,7 @@ func EditAppCSS(AppCSSCode string) {
 
 func CreateJSFile(CreateJSFileArgs ArgsCreateFile) {
 	// Run the shell script with the variable value
-	cmd := exec.Command("shell_script/createJSFile.sh", CreateJSFileArgs.FileName, CreateJSFileArgs.FileContent)
+	cmd := exec.Command("~/shell_script/createJSFile.sh", CreateJSFileArgs.FileName, CreateJSFileArgs.FileContent)
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -52,7 +52,7 @@ func InstallLibraries(IntallLibrariesArgs ArgsLibraries) {
 	// }
 	libStr := IntallLibrariesArgs.Libraries
 	// Run the shell script to import the required libraries
-	cmd := exec.Command("shell_script/importLibs.sh", libStr)
+	cmd := exec.Command("~/shell_script/importLibs.sh", libStr)
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Error:", err)
