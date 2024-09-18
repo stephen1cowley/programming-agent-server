@@ -25,3 +25,4 @@ phases:
 artifacts:
   files:
     - server
+    - appspec.yml
