@@ -4,7 +4,7 @@ phases:
   install:
     commands:
       - echo "Installing dependencies..."
-      - npm install -y golang
+      - sudo apt install golang-go
   build:
     commands:
       - echo "Building the Go application..."
