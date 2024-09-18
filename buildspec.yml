@@ -7,7 +7,7 @@ phases:
       - go version
       - wget https://dl.google.com/go/go1.22.5.linux-amd64.tar.gz
       - tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz
-      - export PATH=$PATH:/usr/local/go/bin
+      - export PATH=/usr/local/go/bin:$PATH
       - go version
   pre_build:
     commands:
