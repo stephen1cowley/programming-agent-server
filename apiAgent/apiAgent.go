@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"os/exec"
 	"regexp"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/sashabaranov/go-openai"
 	funcTools "github.com/stephen1cowley/programming-agent-server/funcTools"
@@ -66,8 +68,28 @@ func onRestart() {
 	}
 	fmt.Println(string(output))
 
+	// Load the Shared AWS Configuration (~/.aws/config)
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("eu-west-2"))
+	if err != nil {
+		fmt.Printf("unable to load SDK config, %v", err)
+	}
+
+	// Create a Secrets Manager client
+	svc := secretsmanager.NewFromConfig(cfg)
+
+	// Create the input for the GetSecretValue API call
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId: aws.String("open-ai-api-key"),
+	}
+
+	// Retrieve the secret value
+	result, err := svc.GetSecretValue(context.TODO(), input)
+	if err != nil {
+		fmt.Printf("failed to retrieve secret, %v", err)
+	}
+
 	// Initialise chat variables
-	apiKey = os.Getenv("OPEN_AI_API_KEY")
+	apiKey = *result.SecretString
 	client = *openai.NewClient(apiKey)
 	messages = make([]openai.ChatCompletionMessage, 0)
 	currDirState = funcTools.DirectoryState{} // i.e. initially empty
