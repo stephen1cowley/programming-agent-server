@@ -48,10 +48,10 @@ func ApiAgent() {
 	onRestart()
 
 	// Create a new router
-	router := http.NewServeMux()
+	// router := http.NewServeMux()
 
 	// Apply CORS middleware to all routes
-	http.Handle("/", corsMiddleware(router))
+	http.HandleFunc("/api/test/", apiTestHandler)
 
 	// Now we can begin the conversation by opening up the server!
 	http.HandleFunc("/api/message", apiMessageHandler)
@@ -266,6 +266,13 @@ func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func apiTestHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 }
 
 func corsMiddleware(next http.Handler) http.Handler {
