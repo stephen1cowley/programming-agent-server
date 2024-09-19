@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os/exec"
 	"regexp"
@@ -26,6 +27,10 @@ type msgsSchema struct {
 	Messages []msgSchema `json:"messages"`
 }
 
+type secretSchema struct {
+	OpenAIAPI string `json:"OpenAIAPI"`
+}
+
 // Global variables (for now...)
 var apiKey string
 var client openai.Client
@@ -37,6 +42,7 @@ var editAppJSResp funcTools.ArgsAppJS
 var editAppCSSResp funcTools.ArgsAppCSS
 var newFileResp funcTools.ArgsCreateFile
 var libsResp funcTools.ArgsLibraries
+var secretData secretSchema
 
 func ApiAgent() {
 	onRestart()
@@ -88,8 +94,13 @@ func onRestart() {
 		fmt.Printf("failed to retrieve secret, %v", err)
 	}
 
+	err = json.Unmarshal([]byte(*result.SecretString), &secretData)
+	if err != nil {
+		log.Fatalf("Failed to unmarshal secret: %v", err)
+	}
+
 	// Initialise chat variables
-	apiKey = *result.SecretString
+	apiKey = secretData.OpenAIAPI
 	client = *openai.NewClient(apiKey)
 	messages = make([]openai.ChatCompletionMessage, 0)
 	currDirState = funcTools.DirectoryState{} // i.e. initially empty
