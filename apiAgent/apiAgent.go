@@ -270,6 +270,7 @@ func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 
 func apiTestHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
+		fmt.Println("Test request received...")
 		w.WriteHeader(http.StatusOK)
 		return
 	}
