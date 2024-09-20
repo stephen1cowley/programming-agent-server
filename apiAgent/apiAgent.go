@@ -112,7 +112,7 @@ func onRestart() {
 }
 
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Replace with your allowed origin(s)
+	w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com") // Replace with your allowed origin(s)
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
@@ -254,7 +254,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Replace with your allowed origin(s)
+	w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com") // Replace with your allowed origin(s)
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
