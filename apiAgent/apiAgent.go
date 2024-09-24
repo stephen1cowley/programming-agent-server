@@ -282,7 +282,7 @@ func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
-	} else if r.Method == http.MethodDelete {
+	} else if r.Method == http.MethodPost {
 		var deleteRequest deleteFileSchema
 		err := json.NewDecoder(r.Body).Decode(&deleteRequest)
 		if err != nil {
