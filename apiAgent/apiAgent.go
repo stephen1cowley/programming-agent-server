@@ -57,7 +57,7 @@ func ApiAgent() {
 	// Now we can begin the conversation by opening up the server!
 	http.HandleFunc("/api/message", apiMessageHandler)
 	http.HandleFunc("/api/restart", apiRestartHandler)
-	http.HandleFunc("/api/upload", apiUploadHandler)
+	// http.HandleFunc("/api/upload", apiUploadHandler)
 
 	fmt.Println("Server listening on :80")
 	err := http.ListenAndServe(":80", nil)
