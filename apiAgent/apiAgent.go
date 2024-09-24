@@ -279,6 +279,7 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	} else if r.Method == http.MethodPost {
+		fmt.Println("Got to this bit")
 		// Parse the form with a max size of 10MB
 		err := r.ParseMultipartForm(10 << 20) // 10 MB
 		if err != nil {
