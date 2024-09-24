@@ -273,6 +273,7 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com") // Replace with your allowed origin(s)
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	w.Header().Set("Content-Type", "text/plain")
 
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
