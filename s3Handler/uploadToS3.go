@@ -61,3 +61,28 @@ func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, err
 	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", S3_BUCKET, S3_REGION, s3Path)
 	return fileURL, nil
 }
+
+// DeleteFromS3 deletes a file from S3 given its path and returns an error if any occurs
+func DeleteFromS3(filePath string) error {
+	// Load AWS configuration
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(S3_REGION))
+	if err != nil {
+		return fmt.Errorf("unable to load AWS SDK config, %v", err)
+	}
+
+	// Create an S3 client
+	s3Client := s3.NewFromConfig(cfg)
+
+	// Delete the file from S3
+	_, err = s3Client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
+		Bucket: aws.String(S3_BUCKET),
+		Key:    aws.String(filePath),
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to delete object %s from S3: %v", filePath, err)
+	}
+
+	log.Printf("Successfully deleted %s from S3", filePath)
+	return nil
+}

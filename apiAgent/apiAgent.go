@@ -32,6 +32,10 @@ type secretSchema struct {
 	OpenAIAPI string `json:"OpenAIAPI"`
 }
 
+type deleteFileSchema struct {
+	FileName string `json:"fileName"`
+}
+
 // Global variables (for now...)
 var apiKey string
 var client openai.Client
@@ -58,6 +62,7 @@ func ApiAgent() {
 	http.HandleFunc("/api/message", apiMessageHandler)
 	http.HandleFunc("/api/restart", apiRestartHandler)
 	http.HandleFunc("/api/upload", apiUploadHandler)
+	http.HandleFunc("/api/imdel", apiImdelHandler)
 
 	fmt.Println("Server listening on :80")
 	err := http.ListenAndServe(":80", nil)
@@ -269,6 +274,28 @@ func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com") // Replace with your allowed origin(s)
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	} else if r.Method == http.MethodDelete {
+		var deleteRequest deleteFileSchema
+		err := json.NewDecoder(r.Body).Decode(&deleteRequest)
+		if err != nil {
+			http.Error(w, "Error unmarshalling JSON", http.StatusBadRequest)
+		}
+		fileToDelete := deleteRequest.FileName
+		s3handler.DeleteFromS3(fileToDelete)
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprintln(w, "Method not allowed") // server debug message
+	}
+}
+
 func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com") // Replace with your allowed origin(s)
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -279,7 +306,6 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	} else if r.Method == http.MethodPost {
-		fmt.Println("Got to this bit")
 		// Parse the form with a max size of 10MB
 		err := r.ParseMultipartForm(10 << 20) // 10 MB
 		if err != nil {
@@ -300,8 +326,6 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to upload file to S3", http.StatusInternalServerError)
 			return
 		}
-
-		fmt.Println("Got to the write bit")
 
 		w.Write([]byte(fmt.Sprintf("File uploaded successfully: %s", fileURL)))
 	} else {
