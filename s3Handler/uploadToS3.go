@@ -4,13 +4,17 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
+
+var s3Client *s3.Client
 
 const (
 	S3_REGION = "eu-west-2"
@@ -19,7 +23,15 @@ const (
 
 // uploadToS3 uploads the file to S3 and returns the file URL
 func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, error) {
-	var s3Client *s3.Client
+
+	// Load AWS configuration
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(S3_REGION))
+	if err != nil {
+		log.Fatalf("unable to load AWS SDK config, %v", err)
+	}
+
+	// Create an S3 client
+	s3Client = s3.NewFromConfig(cfg)
 
 	// Read file content
 	size := handler.Size
@@ -33,7 +45,7 @@ func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, err
 	s3Path := "uploads/" + fileName
 
 	// Upload the file to S3
-	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
+	_, err = s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:        aws.String(S3_BUCKET),
 		Key:           aws.String(s3Path),
 		Body:          fileBytes,
