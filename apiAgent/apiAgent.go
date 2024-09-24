@@ -56,6 +56,7 @@ func ApiAgent() {
 	// Now we can begin the conversation by opening up the server!
 	http.HandleFunc("/api/message", apiMessageHandler)
 	http.HandleFunc("/api/restart", apiRestartHandler)
+	http.HandleFunc("/api/upload", apiUploadHandler)
 
 	fmt.Println("Server listening on :80")
 	err := http.ListenAndServe(":80", nil)
@@ -258,14 +259,27 @@ func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
+	w.WriteHeader(http.StatusOK)
+
 	if r.Method == http.MethodPut {
 		onRestart()
 	} else if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
 		return
 	}
+}
+
+func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com") // Replace with your allowed origin(s)
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 	w.WriteHeader(http.StatusOK)
+
+	if r.Method == http.MethodOptions {
+		return
+	} else if r.Method == http.MethodPut {
+
+	}
 }
 
 func apiTestHandler(w http.ResponseWriter, r *http.Request) {
