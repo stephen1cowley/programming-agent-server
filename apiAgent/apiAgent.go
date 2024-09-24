@@ -57,7 +57,7 @@ func ApiAgent() {
 	// Now we can begin the conversation by opening up the server!
 	http.HandleFunc("/api/message", apiMessageHandler)
 	http.HandleFunc("/api/restart", apiRestartHandler)
-	// http.HandleFunc("/api/upload", apiUploadHandler)
+	http.HandleFunc("/api/upload", apiUploadHandler)
 
 	fmt.Println("Server listening on :80")
 	err := http.ListenAndServe(":80", nil)
@@ -278,6 +278,12 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	} else if r.Method == http.MethodPut {
+		// Parse the form with a max size of 10MB
+		err := r.ParseMultipartForm(10 << 20) // 10 MB
+		if err != nil {
+			http.Error(w, "Unable to process file", http.StatusBadRequest)
+			return
+		}
 
 		file, handler, err := r.FormFile("file")
 		if err != nil {
