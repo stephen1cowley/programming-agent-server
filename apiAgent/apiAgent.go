@@ -289,7 +289,13 @@ func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error unmarshalling JSON", http.StatusBadRequest)
 		}
 		fileToDelete := deleteRequest.FileName
-		s3handler.DeleteFromS3(fileToDelete)
+		err = s3handler.DeleteFromS3(fileToDelete)
+		if err != nil {
+			fmt.Println("Error deleting file, ", err)
+			http.Error(w, "Error deleting file", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprintln(w, "Method not allowed") // server debug message
