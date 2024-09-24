@@ -116,6 +116,12 @@ func onRestart() {
 		Content: "You are a helpful software engineer. Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles. You are able to change App.js and App.css. You are able to create new JavaScript files to assist you in creating the application, ensure these are correctly imported into App.js. You also have access to an S3 bucket for images: https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/.",
 	} // Starting system message always prepended to list of messages
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
+
+	// Delete everything in the S3 Folder
+	err = s3handler.DeleteAllFromS3("uploads/")
+	if err != nil {
+		fmt.Println("Failed to delete all items in the S3 folder", err)
+	}
 }
 
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
