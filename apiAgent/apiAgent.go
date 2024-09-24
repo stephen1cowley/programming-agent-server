@@ -16,6 +16,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/sashabaranov/go-openai"
 	funcTools "github.com/stephen1cowley/programming-agent-server/funcTools"
+	s3handler "github.com/stephen1cowley/programming-agent-server/s3Handler"
 )
 
 type msgSchema struct {
@@ -279,6 +280,21 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if r.Method == http.MethodPut {
 
+		file, handler, err := r.FormFile("file")
+		if err != nil {
+			http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+
+		// Upload to S3
+		fileURL, err := s3handler.UploadToS3(file, handler)
+		if err != nil {
+			http.Error(w, "Failed to upload file to S3", http.StatusInternalServerError)
+			return
+		}
+
+		w.Write([]byte(fmt.Sprintf("File uploaded successfully: %s", fileURL)))
 	}
 }
 
