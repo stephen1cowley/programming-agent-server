@@ -113,7 +113,7 @@ func onRestart() {
 	currDirState = funcTools.DirectoryState{} // i.e. initially empty
 	startSysMsg = openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleSystem,
-		Content: "You are a helpful software engineer. Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles. You are able to change App.js and App.css. You are able to create new JavaScript files to assist you in creating the application, ensure these are correctly imported into App.js. You also have access to an S3 bucket for images: https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/.",
+		Content: "You are a helpful software engineer. Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles. You are able to change App.js and App.css. You are able to create new JavaScript files to assist you in creating the application, ensure these are correctly imported into App.js. You also have access to an S3 bucket folder for images: https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/uploads/.",
 	} // Starting system message always prepended to list of messages
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
 
@@ -130,6 +130,13 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 	if r.Method == http.MethodPost {
+		var err error
+		currDirState.S3Images, err = s3handler.ListAllInS3("uploads/")
+		if err != nil {
+			http.Error(w, "Error finding images", http.StatusInternalServerError)
+			return
+		}
+		fmt.Println("Current images are", currDirState.S3Images)
 
 		var requestData msgsSchema
 		if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {

@@ -9,6 +9,7 @@ type DirectoryState struct {
 	AppJSCode  string
 	AppCSSCode string
 	OtherFiles []FileState
+	S3Images   []string
 }
 
 func (cd DirectoryState) CreateSysMsgState() (sysMsg string) {
