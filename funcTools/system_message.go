@@ -13,8 +13,11 @@ type DirectoryState struct {
 }
 
 func (cd DirectoryState) CreateSysMsgState() (sysMsg string) {
-	sysMsg = "Currently, the images available to you are:"
+	if len(cd.S3Images) == 0 {
+		sysMsg += "Currently, there are NO images in the S3 folder."
+	}
 	for _, imName := range cd.S3Images {
+		sysMsg += "Currently, the images available to you in the S3 folder are:"
 		sysMsg += "\n" + imName
 	}
 	sysMsg += "\n\n"
