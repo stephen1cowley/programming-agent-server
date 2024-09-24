@@ -13,7 +13,12 @@ type DirectoryState struct {
 }
 
 func (cd DirectoryState) CreateSysMsgState() (sysMsg string) {
-	sysMsg = "The current file contents are as follows:\n\n"
+	sysMsg = "Currently, the images available to you are:"
+	for _, imName := range cd.S3Images {
+		sysMsg += "\n" + imName
+	}
+	sysMsg += "\n\n"
+	sysMsg += "The current file contents are as follows:\n\n"
 	sysMsg += "`App.js`:\n\n```jsx\n"
 	sysMsg += cd.AppJSCode
 	sysMsg += "\n```css\n\n`App.css`:\n\n```\n"
