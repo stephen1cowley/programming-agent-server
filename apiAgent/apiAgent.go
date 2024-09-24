@@ -300,6 +300,9 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Write([]byte(fmt.Sprintf("File uploaded successfully: %s", fileURL)))
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprintln(w, "Method not allowed") // server debug message
 	}
 }
 
