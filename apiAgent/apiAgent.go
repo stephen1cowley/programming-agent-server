@@ -52,10 +52,7 @@ var secretData secretSchema
 func ApiAgent() {
 	onRestart()
 
-	// Create a new router
-	// router := http.NewServeMux()
-
-	// Apply CORS middleware to all routes
+	// Test requests to check if server is alive
 	http.HandleFunc("/api/test/", apiTestHandler)
 
 	// Now we can begin the conversation by opening up the server!
@@ -67,26 +64,28 @@ func ApiAgent() {
 	fmt.Println("Server listening on :80")
 	err := http.ListenAndServe(":80", nil)
 	if err != nil {
-		fmt.Printf("Error starting server: %v\n", err)
+		log.Fatalf("Error starting server on :80: %v\n", err)
 	}
 }
 
-func onRestart() {
-	// Start off by cleaning the React App source code
-	cmd := exec.Command("/home/ubuntu/shell_script/onStartup.sh")
-	output, err := cmd.Output()
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	fmt.Println(string(output))
-
-	go s3handler.InitS3()
-
+func onRestart() error {
 	// Load the Shared AWS Configuration (~/.aws/config)
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("eu-west-2"))
 	if err != nil {
-		fmt.Printf("unable to load SDK config, %v", err)
+		log.Fatalf("unable to load SDK config, %v", err)
+		return err
+	}
+
+	// Concurrently create an S3 client
+	go s3handler.InitS3(cfg)
+
+	// Clean the React App source code
+	cmd := exec.Command("/home/ubuntu/shell_script/onStartup.sh")
+	output, err := cmd.Output()
+	if err != nil {
+		log.Printf("Output of onStartup.sh: %s", output)
+		log.Printf("Error: %v", err)
+		return err
 	}
 
 	// Create a Secrets Manager client
@@ -100,15 +99,18 @@ func onRestart() {
 	// Retrieve the secret value
 	result, err := svc.GetSecretValue(context.TODO(), input)
 	if err != nil {
-		fmt.Printf("failed to retrieve secret, %v", err)
+		log.Printf("failed to retrieve secret, %v", err)
+		return err
 	}
 
 	err = json.Unmarshal([]byte(*result.SecretString), &secretData)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal secret: %v", err)
+		log.Printf("Failed to unmarshal secret: %v", err)
+		return err
 	}
 
 	// Initialise chat variables
+	// Starting system message always prepended to list of messages
 	apiKey = secretData.OpenAIAPI
 	client = *openai.NewClient(apiKey)
 	messages = make([]openai.ChatCompletionMessage, 0)
@@ -116,14 +118,18 @@ func onRestart() {
 	startSysMsg = openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleSystem,
 		Content: "You are a helpful software engineer. Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles. You are able to change App.js and App.css. You are able to create new JavaScript files to assist you in creating the application, ensure these are correctly imported into App.js. You also have access to an S3 bucket folder for images: https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/uploads/.",
-	} // Starting system message always prepended to list of messages
+	}
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
 
 	// Delete everything in the S3 Folder
 	err = s3handler.DeleteAllFromS3("uploads/")
 	if err != nil {
-		fmt.Println("Failed to delete all items in the S3 folder", err)
+		fmt.Printf("Failed to delete all items in the S3 folder: %v", err)
+		return err
 	}
+
+	// No errors on startup
+	return nil
 }
 
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
@@ -276,16 +282,11 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com") // Replace with your allowed origin(s)
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-	w.WriteHeader(http.StatusOK)
-
 	if r.Method == http.MethodPut {
 		onRestart()
-	} else if r.Method == http.MethodOptions {
-		return
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
@@ -366,11 +367,17 @@ func apiTestHandler(w http.ResponseWriter, r *http.Request) {
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Replace with your allowed origin(s)
+		w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		// Continue with the next handler
+		// Handle preflight request (OPTIONS)
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Call the next handler
 		next.ServeHTTP(w, r)
 	})
 }

@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -22,14 +21,7 @@ const (
 )
 
 // InitS3 Creates a fresh S3 client, required for the running of the other S3 functions
-func InitS3() {
-	// Load AWS configuration.
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(S3_REGION))
-	if err != nil {
-		log.Fatalf("unable to load AWS SDK config, %v", err)
-	}
-
-	// Create an S3 client
+func InitS3(cfg aws.Config) {
 	s3Client = s3.NewFromConfig(cfg)
 }
 
