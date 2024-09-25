@@ -1,10 +1,12 @@
 package funcTools
 
+// Filestate holds a file's name and the code within it
 type FileState struct {
 	FileName string
 	FileCode string
 }
 
+// DirectoryState holds the state of current JS, CSS files and the file names of available images
 type DirectoryState struct {
 	AppJSCode  string
 	AppCSSCode string
@@ -12,6 +14,7 @@ type DirectoryState struct {
 	S3Images   []string
 }
 
+// CreateSysMsgState formulates a user message to be sent each time to the LLM
 func (cd DirectoryState) CreateSysMsgState() (sysMsg string) {
 	if len(cd.S3Images) == 0 {
 		sysMsg += "Currently, there are NO images in the S3 folder."

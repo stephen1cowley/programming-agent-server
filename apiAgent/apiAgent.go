@@ -49,6 +49,7 @@ var newFileResp funcTools.ArgsCreateFile
 var libsResp funcTools.ArgsLibraries
 var secretData secretSchema
 
+// APiAgent sets up the Programming Agent http server on port 80
 func ApiAgent() {
 	err := onRestart()
 	if err != nil {
@@ -68,6 +69,7 @@ func ApiAgent() {
 	}
 }
 
+// onRestart initializes a variety of different variables and AWS settings
 func onRestart() error {
 	// Load the Shared AWS Configuration (~/.aws/config)
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("eu-west-2"))

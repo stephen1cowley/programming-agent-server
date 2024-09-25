@@ -25,7 +25,7 @@ func InitS3(cfg aws.Config) {
 	s3Client = s3.NewFromConfig(cfg)
 }
 
-// uploadToS3 uploads the file to S3 and returns the file URL
+// UploadToS3 uploads the file to S3 and returns the file URL
 func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, error) {
 	// Read file content
 	size := handler.Size
