@@ -90,6 +90,17 @@ func onRestart() error {
 		return err
 	}
 
+	awsHandlers.InitDynamo(cfg)
+
+	myFirstUser := awsHandlers.User{
+		UserID:   "123456789",
+		Password: "password",
+	}
+	err = awsHandlers.DynamoPutUser(myFirstUser)
+	if err != nil {
+		log.Fatalf("Failed to add user %v", err)
+	}
+
 	// Create a Secrets Manager client
 	svc := secretsmanager.NewFromConfig(cfg)
 
