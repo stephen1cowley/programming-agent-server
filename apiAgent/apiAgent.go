@@ -36,17 +36,18 @@ type deleteFileSchema struct {
 	FileName string `json:"fileName"`
 }
 
-// Global variables (for now...)
+// Global variables
+const TEST_USER_ID = "123"
+
 var apiKey string
 var client openai.Client
-var messages []openai.ChatCompletionMessage
-var currDirState funcTools.DirectoryState
-var startSysMsg openai.ChatCompletionMessage
+var messages []openai.ChatCompletionMessage // NOTE TO BEGONE!
+var currDirState funcTools.DirectoryState   // NOTE TO BEGONE!
+var startSysMsg = openai.ChatCompletionMessage{
+	Role:    openai.ChatMessageRoleSystem,
+	Content: "You are a helpful software engineer. Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles. You are able to change App.js and App.css. You are able to create new JavaScript files to assist you in creating the application, ensure these are correctly imported into App.js. You also have access to an S3 bucket folder for images: https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/uploads/.",
+}
 var myTools []openai.Tool
-var editAppJSResp funcTools.ArgsAppJS
-var editAppCSSResp funcTools.ArgsAppCSS
-var newFileResp funcTools.ArgsCreateFile
-var libsResp funcTools.ArgsLibraries
 var secretData secretSchema
 
 // APiAgent sets up the Programming Agent http server on port 80
@@ -78,8 +79,16 @@ func onRestart() error {
 		return err
 	}
 
-	// Concurrently create an S3 client
+	// Concurrently create an S3 client and DynamoDB client
 	go awsHandlers.InitS3(cfg)
+
+	awsHandlers.InitDynamo(cfg)
+	freshUserState := awsHandlers.UserState{}
+	freshUserState.UserID = TEST_USER_ID
+	err = awsHandlers.DynamoPutUser(freshUserState)
+	if err != nil {
+		log.Printf("Failed to add fresh user %v", err)
+	}
 
 	// Clean the React App source code
 	cmd := exec.Command("/home/ubuntu/shell_script/onStartup.sh")
@@ -88,26 +97,6 @@ func onRestart() error {
 		log.Printf("Output of onStartup.sh: %s", output)
 		log.Printf("Error: %v", err)
 		return err
-	}
-
-	awsHandlers.InitDynamo(cfg)
-
-	myFirstUser := awsHandlers.User{
-		UserID:   "123456789",
-		Password: "password",
-	}
-	err = awsHandlers.DynamoPutUser(myFirstUser)
-	if err != nil {
-		log.Fatalf("Failed to add user %v", err)
-	}
-	returnedUser, err := awsHandlers.DynamoGetUser("123456789")
-	if err == nil {
-		log.Printf("Failed to find user %v", err)
-	}
-	log.Println("Successfully found user, ", returnedUser)
-	_, err = awsHandlers.DynamoGetUser("123456789")
-	if err == nil {
-		log.Printf("Failed to find user %v", err)
 	}
 
 	// Create a Secrets Manager client
@@ -137,10 +126,7 @@ func onRestart() error {
 	client = *openai.NewClient(apiKey)
 	messages = make([]openai.ChatCompletionMessage, 0)
 	currDirState = funcTools.DirectoryState{} // i.e. initially empty
-	startSysMsg = openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleSystem,
-		Content: "You are a helpful software engineer. Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles. You are able to change App.js and App.css. You are able to create new JavaScript files to assist you in creating the application, ensure these are correctly imported into App.js. You also have access to an S3 bucket folder for images: https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/uploads/.",
-	}
+
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
 
 	// Delete everything in the S3 Folder
@@ -155,6 +141,10 @@ func onRestart() error {
 }
 
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
+	var editAppJSResp funcTools.ArgsAppJS
+	var editAppCSSResp funcTools.ArgsAppCSS
+	var newFileResp funcTools.ArgsCreateFile
+
 	if r.Method == http.MethodPost {
 		var err error
 		currDirState.S3Images, err = awsHandlers.ListAllInS3("uploads/")
@@ -260,12 +250,6 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 						FileName: newFileResp.FileName,
 						FileCode: newFileResp.FileContent,
 					})
-			case "libraries_func":
-				fmt.Println("Importing libraries ...")
-				json.Unmarshal([]byte(val.Function.Arguments), &libsResp)
-				funcTools.InstallLibraries(
-					libsResp,
-				)
 			}
 		}
 

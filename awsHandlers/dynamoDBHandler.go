@@ -8,11 +8,18 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/sashabaranov/go-openai"
+
+	funcTools "github.com/stephen1cowley/programming-agent-server/funcTools"
 )
 
-type User struct {
-	UserID   string `json:"UserID"`
-	Password string `json:"Password"`
+// UserState holds the current state for a given user.
+// This includes the current back-and-forth with the AI,
+// as well as the current Directory state
+type UserState struct {
+	UserID         string                         `json:"UserID"`
+	Messages       []openai.ChatCompletionMessage `json:"Messages"`
+	DirectoryState funcTools.DirectoryState       `json:"DirectoryState"`
 }
 
 var dynamoClient *dynamodb.Client
@@ -23,7 +30,7 @@ func InitDynamo(cfg aws.Config) {
 }
 
 // DynamoPutUser creates a new user with the given details
-func DynamoPutUser(user User) error {
+func DynamoPutUser(user UserState) error {
 	// Marshal the user struct to a DynamoDB attribute value
 	av, err := attributevalue.MarshalMap(user)
 	if err != nil {
@@ -46,7 +53,7 @@ func DynamoPutUser(user User) error {
 }
 
 // DynamoGetUser retrieves a user's information from the DynamoDB table based on the UserID
-func DynamoGetUser(userID string) (*User, error) {
+func DynamoGetUser(userID string) (*UserState, error) {
 	// Create the input for GetItem
 	input := &dynamodb.GetItemInput{
 		TableName: aws.String("programming-agent-users"),
@@ -67,7 +74,7 @@ func DynamoGetUser(userID string) (*User, error) {
 	}
 
 	// Unmarshal the result into a User struct
-	var user User
+	var user UserState
 	err = attributevalue.UnmarshalMap(result.Item, &user)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal user: %w", err)
