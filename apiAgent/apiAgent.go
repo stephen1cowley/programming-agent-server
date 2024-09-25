@@ -144,7 +144,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 		var requestData msgsSchema
 		if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			http.Error(w, "Error decoding request data", http.StatusBadRequest)
 			fmt.Fprintln(w, "Error decoding request data:", err)
 			return
 		}
@@ -183,7 +183,8 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		cancel()
 
 		if err != nil {
-			fmt.Printf("ChatCompletion error: %v\n", err)
+			http.Error(w, "ChatCompletion error", http.StatusInternalServerError)
+			log.Printf("ChatCompletion error: %v\n", err)
 			return
 		}
 
@@ -259,15 +260,15 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Create output and respond (same as input schema for now...)
 		jsonResponse := msgSchema{Role: "ai", Text: content}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintln(w, "Error encoding JSON response", err)
+			http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
+			log.Println(w, "Error encoding JSON response", err)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		log.Println(w, "Method not allowed")
 	}
 }
@@ -276,13 +277,13 @@ func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPut {
 		err := onRestart()
 		if err != nil {
-			log.Fatalf("Error restarting the application, %v", err)
 			http.Error(w, "Error restarting the application", http.StatusInternalServerError)
+			log.Fatalf("Error restarting the application, %v", err)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
 	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		log.Println(w, "Method not allowed")
 	}
 }
@@ -293,17 +294,19 @@ func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&deleteRequest)
 		if err != nil {
 			http.Error(w, "Error unmarshalling JSON", http.StatusBadRequest)
+			fmt.Fprintln(w, "Error decoding request data:", err)
+			return
 		}
 		fileToDelete := deleteRequest.FileName
 		err = s3handler.DeleteFromS3(fileToDelete)
 		if err != nil {
-			fmt.Println("Error deleting file, ", err)
 			http.Error(w, "Error deleting file", http.StatusInternalServerError)
+			log.Println("Error deleting file, ", err)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
 	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		log.Println(w, "Method not allowed")
 	}
 }
@@ -330,9 +333,10 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to upload file to S3", http.StatusInternalServerError)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(fmt.Sprintf("File uploaded successfully: %s", fileURL)))
 	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		log.Println(w, "Method not allowed")
 	}
 }
@@ -342,7 +346,7 @@ func apiTestHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		log.Println("Test request received...")
 	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		log.Println(w, "Method not allowed")
 	}
 }
