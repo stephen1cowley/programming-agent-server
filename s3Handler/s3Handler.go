@@ -21,9 +21,8 @@ const (
 	S3_BUCKET = "my-programming-agent-img-store"
 )
 
-// uploadToS3 uploads the file to S3 and returns the file URL
-func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, error) {
-
+// InitS3 Creates a fresh S3 client, required for the running of the other S3 functions
+func InitS3() {
 	// Load AWS configuration.
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(S3_REGION))
 	if err != nil {
@@ -32,7 +31,10 @@ func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, err
 
 	// Create an S3 client
 	s3Client = s3.NewFromConfig(cfg)
+}
 
+// uploadToS3 uploads the file to S3 and returns the file URL
+func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, error) {
 	// Read file content
 	size := handler.Size
 	buffer := make([]byte, size)
@@ -45,7 +47,7 @@ func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, err
 	s3Path := "uploads/" + fileName
 
 	// Upload the file to S3
-	_, err = s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
+	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:        aws.String(S3_BUCKET),
 		Key:           aws.String(s3Path),
 		Body:          fileBytes,
@@ -64,17 +66,8 @@ func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, err
 
 // DeleteFromS3 deletes a file from S3 given its path and returns an error if any occurs
 func DeleteFromS3(filePath string) error {
-	// Load AWS configuration
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(S3_REGION))
-	if err != nil {
-		return fmt.Errorf("unable to load AWS SDK config, %v", err)
-	}
-
-	// Create an S3 client
-	s3Client := s3.NewFromConfig(cfg)
-
 	// Delete the file from S3
-	_, err = s3Client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
+	_, err := s3Client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
 		Bucket: aws.String(S3_BUCKET),
 		Key:    aws.String(filePath),
 	})
@@ -89,15 +82,6 @@ func DeleteFromS3(filePath string) error {
 
 // DeleteAllFromS3 deletes ALL files from S3 given the folder and returns an error if any occurs
 func DeleteAllFromS3(folderPath string) error {
-	// Load AWS configuration
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(S3_REGION))
-	if err != nil {
-		return fmt.Errorf("unable to load AWS SDK config, %v", err)
-	}
-
-	// Create an S3 client
-	s3Client := s3.NewFromConfig(cfg)
-
 	fileContents, err := ListAllInS3(folderPath)
 	if err != nil {
 		return fmt.Errorf("failed to list objects in folder: %v", err)
@@ -130,15 +114,6 @@ func DeleteAllFromS3(folderPath string) error {
 // ListAllInS3 returns a list of all the items inside the given folder
 func ListAllInS3(folderPath string) ([]string, error) {
 	var fileContents []string
-	// Load AWS configuration
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(S3_REGION))
-	if err != nil {
-		return fileContents, fmt.Errorf("unable to load AWS SDK config, %v", err)
-	}
-
-	// Create an S3 client
-	s3Client := s3.NewFromConfig(cfg)
-
 	// List all the objects with the given prefix (folderPath)
 	listInput := &s3.ListObjectsV2Input{
 		Bucket: aws.String(S3_BUCKET),

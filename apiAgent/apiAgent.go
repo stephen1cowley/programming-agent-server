@@ -81,6 +81,8 @@ func onRestart() {
 	}
 	fmt.Println(string(output))
 
+	go s3handler.InitS3()
+
 	// Load the Shared AWS Configuration (~/.aws/config)
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("eu-west-2"))
 	if err != nil {
