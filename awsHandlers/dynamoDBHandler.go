@@ -30,7 +30,7 @@ func DynamoPutUser(user User) error {
 
 	// Create the input for PutItem
 	input := &dynamodb.PutItemInput{
-		TableName: aws.String("programming-agent-user"),
+		TableName: aws.String("programming-agent-users"),
 		Item:      av,
 	}
 
