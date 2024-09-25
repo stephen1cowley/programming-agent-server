@@ -272,13 +272,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			Content: content,
 		})
 
-		// Create output and respond (same as input schema for now...)
-		jsonResponse := msgSchema{Role: "ai", Text: content}
-		if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
-			http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
-			log.Println(w, "Error encoding JSON response", err)
-			return
-		}
+		w.Header().Set("Content-Type", "application/json")
 
 		// Update the UserState now that messages have been added and file contents changed
 		err = awsHandlers.DynamoPutUser(*currUserState)
@@ -286,8 +280,13 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Failed to add fresh user %v", err)
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
+		// Create output and respond (same as input schema for now...)
+		jsonResponse := msgSchema{Role: "ai", Text: content}
+		if err := json.NewEncoder(w).Encode(jsonResponse); err != nil {
+			http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
+			log.Println(w, "Error encoding JSON response", err)
+			return
+		}
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		log.Println(w, "Method not allowed")
