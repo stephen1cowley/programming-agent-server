@@ -145,14 +145,25 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	var editAppCSSResp funcTools.ArgsAppCSS
 	var newFileResp funcTools.ArgsCreateFile
 
+	var currUserState *awsHandlers.UserState
+	var err error
+
 	if r.Method == http.MethodPost {
-		var err error
-		currDirState.S3Images, err = awsHandlers.ListAllInS3("uploads/")
+		// Get the previous UserState
+		currUserState, err = awsHandlers.DynamoGetUser(TEST_USER_ID)
 		if err != nil {
-			http.Error(w, "Error finding images", http.StatusInternalServerError)
+			http.Error(w, "Failed to find user of given credentials", http.StatusInternalServerError)
+			log.Printf("Failed to find user of given credentials %v\n", err)
 			return
 		}
-		fmt.Println("Current images are", currDirState.S3Images)
+
+		currUserState.DirectoryState.S3Images, err = awsHandlers.ListAllInS3("uploads/")
+		if err != nil {
+			http.Error(w, "Error finding images", http.StatusInternalServerError)
+			log.Printf("Error finding images %v\n", err)
+			return
+		}
+		fmt.Println("Current images are", currUserState.DirectoryState.S3Images)
 
 		var requestData msgsSchema
 		if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
@@ -163,7 +174,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Process data after successful unmarshalling
 		text := requestData.Messages[0].Text
-		messages = append(messages, openai.ChatCompletionMessage{
+		currUserState.Messages = append(currUserState.Messages, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleUser,
 			Content: text,
 		})
@@ -171,11 +182,11 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		// System message at the end describing the current state of the files
 		endSysMsg := openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleSystem,
-			Content: currDirState.CreateSysMsgState(),
+			Content: currUserState.DirectoryState.CreateSysMsgState(),
 		}
 
 		// Start and end system message with user/machine communication sandwiched inbetween
-		messagesWithSys := append(append([]openai.ChatCompletionMessage{startSysMsg}, messages...), endSysMsg)
+		messagesWithSys := append(append([]openai.ChatCompletionMessage{startSysMsg}, currUserState.Messages...), endSysMsg)
 		fmt.Println(messagesWithSys)
 
 		// Define a regular expression pattern to match everything between backticks
@@ -205,7 +216,6 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		tool_calls := resp.Choices[0].Message.ToolCalls
 
 		fmt.Println(content)
-		fmt.Println(messages)
 
 		if len(tool_calls) != 0 {
 			fmt.Println("Now making any tool calls ...")
@@ -223,29 +233,29 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 				funcTools.EditAppJS(
 					editAppJSResp.AppJSCode,
 				)
-				currDirState.AppJSCode = editAppJSResp.AppJSCode
+				currUserState.DirectoryState.AppJSCode = editAppJSResp.AppJSCode
 			case "app_css_edit_func":
 				fmt.Println("Updating App.css ...")
 				json.Unmarshal([]byte(val.Function.Arguments), &editAppCSSResp)
 				funcTools.EditAppCSS(
 					editAppCSSResp.AppCSSCode,
 				)
-				currDirState.AppCSSCode = editAppCSSResp.AppCSSCode
+				currUserState.DirectoryState.AppCSSCode = editAppCSSResp.AppCSSCode
 			case "new_js_file_func":
 				fmt.Println("Creating new JS file ...")
 				json.Unmarshal([]byte(val.Function.Arguments), &newFileResp)
 				funcTools.CreateJSFile(
 					newFileResp,
 				)
-				for i, file := range currDirState.OtherFiles {
+				for i, file := range currUserState.DirectoryState.OtherFiles {
 					if newFileResp.FileName == file.FileName {
-						currDirState.OtherFiles[i].FileCode = newFileResp.FileContent
+						currUserState.DirectoryState.OtherFiles[i].FileCode = newFileResp.FileContent
 						break outerSwitch
 					}
 				}
 				// File doesn't yet exist in the list; append this new file.
-				currDirState.OtherFiles = append(
-					currDirState.OtherFiles,
+				currUserState.DirectoryState.OtherFiles = append(
+					currUserState.DirectoryState.OtherFiles,
 					funcTools.FileState{
 						FileName: newFileResp.FileName,
 						FileCode: newFileResp.FileContent,
@@ -253,16 +263,14 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if len(messages) >= 10 {
-			messages = messages[2:]
+		if len(currUserState.Messages) >= 10 {
+			currUserState.Messages = currUserState.Messages[2:]
 		}
 
-		messages = append(messages, openai.ChatCompletionMessage{
+		currUserState.Messages = append(currUserState.Messages, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleAssistant,
 			Content: content,
 		})
-
-		fmt.Println(messages)
 
 		// Create output and respond (same as input schema for now...)
 		jsonResponse := msgSchema{Role: "ai", Text: content}
@@ -271,6 +279,13 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(w, "Error encoding JSON response", err)
 			return
 		}
+
+		// Update the UserState now that messages have been added and file contents changed
+		err = awsHandlers.DynamoPutUser(*currUserState)
+		if err != nil {
+			log.Printf("Failed to add fresh user %v", err)
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 	} else {
