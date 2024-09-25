@@ -24,7 +24,7 @@ const (
 // uploadToS3 uploads the file to S3 and returns the file URL
 func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, error) {
 
-	// Load AWS configuration
+	// Load AWS configuration.
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(S3_REGION))
 	if err != nil {
 		log.Fatalf("unable to load AWS SDK config, %v", err)
