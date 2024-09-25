@@ -50,19 +50,19 @@ var libsResp funcTools.ArgsLibraries
 var secretData secretSchema
 
 func ApiAgent() {
-	onRestart()
+	err := onRestart()
+	if err != nil {
+		log.Fatalf("Error restarting the application, %v", err)
+	}
 
-	// Test requests to check if server is alive
-	http.HandleFunc("/api/test/", apiTestHandler)
-
-	// Now we can begin the conversation by opening up the server!
-	http.HandleFunc("/api/message", apiMessageHandler)
+	http.Handle("/api/test/", http.HandlerFunc(apiTestHandler))
+	http.Handle("/api/message", corsMiddleware(http.HandlerFunc(apiMessageHandler)))
 	http.Handle("/api/restart", corsMiddleware(http.HandlerFunc(apiRestartHandler)))
-	http.HandleFunc("/api/upload", apiUploadHandler)
-	http.HandleFunc("/api/imdel", apiImdelHandler)
+	http.Handle("/api/upload", corsMiddleware(http.HandlerFunc(apiUploadHandler)))
+	http.Handle("/api/imdel", corsMiddleware(http.HandlerFunc(apiImdelHandler)))
 
-	fmt.Println("Server listening on :80")
-	err := http.ListenAndServe(":80", nil)
+	log.Println("Server listening on :80")
+	err = http.ListenAndServe(":80", nil)
 	if err != nil {
 		log.Fatalf("Error starting server on :80: %v\n", err)
 	}
@@ -133,10 +133,6 @@ func onRestart() error {
 }
 
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com") // Replace with your allowed origin(s)
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
 	if r.Method == http.MethodPost {
 		var err error
 		currDirState.S3Images, err = s3handler.ListAllInS3("uploads/")
@@ -270,35 +266,29 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintln(w, "Error encoding JSON response", err)
 			return
 		}
-
-	} else if r.Method == http.MethodOptions {
-		// Handle preflight request
-		w.WriteHeader(http.StatusOK)
-		return
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprintln(w, "Method not allowed") // server debug message
+		log.Println(w, "Method not allowed")
 	}
 }
 
 func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPut {
-		onRestart()
+		err := onRestart()
+		if err != nil {
+			log.Fatalf("Error restarting the application, %v", err)
+			http.Error(w, "Error restarting the application", http.StatusInternalServerError)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		log.Println(w, "Method not allowed")
 	}
 }
 
 func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com") // Replace with your allowed origin(s)
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	} else if r.Method == http.MethodPost {
+	if r.Method == http.MethodPost {
 		var deleteRequest deleteFileSchema
 		err := json.NewDecoder(r.Body).Decode(&deleteRequest)
 		if err != nil {
@@ -314,20 +304,12 @@ func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprintln(w, "Method not allowed") // server debug message
+		log.Println(w, "Method not allowed")
 	}
 }
 
 func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "https://stephencowley.com") // Replace with your allowed origin(s)
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-	w.Header().Set("Content-Type", "text/plain")
-
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	} else if r.Method == http.MethodPost {
+	if r.Method == http.MethodPost {
 		// Parse the form with a max size of 10MB
 		err := r.ParseMultipartForm(10 << 20) // 10 MB
 		if err != nil {
@@ -348,19 +330,20 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to upload file to S3", http.StatusInternalServerError)
 			return
 		}
-
 		w.Write([]byte(fmt.Sprintf("File uploaded successfully: %s", fileURL)))
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprintln(w, "Method not allowed") // server debug message
+		log.Println(w, "Method not allowed")
 	}
 }
 
 func apiTestHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		fmt.Println("Test request received...")
 		w.WriteHeader(http.StatusOK)
-		return
+		log.Println("Test request received...")
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		log.Println(w, "Method not allowed")
 	}
 }
 
