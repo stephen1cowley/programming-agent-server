@@ -100,6 +100,15 @@ func onRestart() error {
 	if err != nil {
 		log.Fatalf("Failed to add user %v", err)
 	}
+	returnedUser, err := awsHandlers.DynamoGetUser("123456789")
+	if err == nil {
+		log.Printf("Failed to find user %v", err)
+	}
+	log.Println("Successfully found user, ", returnedUser)
+	_, err = awsHandlers.DynamoGetUser("123456789")
+	if err == nil {
+		log.Printf("Failed to find user %v", err)
+	}
 
 	// Create a Secrets Manager client
 	svc := secretsmanager.NewFromConfig(cfg)
