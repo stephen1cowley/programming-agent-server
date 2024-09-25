@@ -15,8 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/sashabaranov/go-openai"
+	awsHandlers "github.com/stephen1cowley/programming-agent-server/awsHandlers"
 	funcTools "github.com/stephen1cowley/programming-agent-server/funcTools"
-	s3handler "github.com/stephen1cowley/programming-agent-server/s3Handler"
 )
 
 type msgSchema struct {
@@ -79,7 +79,7 @@ func onRestart() error {
 	}
 
 	// Concurrently create an S3 client
-	go s3handler.InitS3(cfg)
+	go awsHandlers.InitS3(cfg)
 
 	// Clean the React App source code
 	cmd := exec.Command("/home/ubuntu/shell_script/onStartup.sh")
@@ -124,7 +124,7 @@ func onRestart() error {
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
 
 	// Delete everything in the S3 Folder
-	err = s3handler.DeleteAllFromS3("uploads/")
+	err = awsHandlers.DeleteAllFromS3("uploads/")
 	if err != nil {
 		fmt.Printf("Failed to delete all items in the S3 folder: %v", err)
 		return err
@@ -137,7 +137,7 @@ func onRestart() error {
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var err error
-		currDirState.S3Images, err = s3handler.ListAllInS3("uploads/")
+		currDirState.S3Images, err = awsHandlers.ListAllInS3("uploads/")
 		if err != nil {
 			http.Error(w, "Error finding images", http.StatusInternalServerError)
 			return
@@ -300,7 +300,7 @@ func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		fileToDelete := deleteRequest.FileName
-		err = s3handler.DeleteFromS3(fileToDelete)
+		err = awsHandlers.DeleteFromS3(fileToDelete)
 		if err != nil {
 			http.Error(w, "Error deleting file", http.StatusInternalServerError)
 			log.Println("Error deleting file, ", err)
@@ -330,7 +330,7 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		// Upload to S3
-		fileURL, err := s3handler.UploadToS3(file, handler)
+		fileURL, err := awsHandlers.UploadToS3(file, handler)
 		if err != nil {
 			http.Error(w, "Failed to upload file to S3", http.StatusInternalServerError)
 			return

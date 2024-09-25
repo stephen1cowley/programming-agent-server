@@ -1,4 +1,4 @@
-package s3Handler
+package awsHandlers
 
 import (
 	"bytes"
