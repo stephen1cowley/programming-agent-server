@@ -126,7 +126,7 @@ func onRestart() error {
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
 
 	// Delete everything in the S3 Folder
-	err = awsHandlers.DeleteAllFromS3("uploads/")
+	err = awsHandlers.DeleteAllFromS3("uploads/" + TEST_USER_ID)
 	if err != nil {
 		fmt.Printf("Failed to delete all items in the S3 folder: %v", err)
 		return err
@@ -153,7 +153,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		currUserState.DirectoryState.S3Images, err = awsHandlers.ListAllInS3("uploads/")
+		currUserState.DirectoryState.S3Images, err = awsHandlers.ListAllInS3("uploads/" + currUserState.UserID)
 		if err != nil {
 			http.Error(w, "Error finding images", http.StatusInternalServerError)
 			log.Printf("Error finding images %v\n", err)
@@ -344,7 +344,7 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		// Upload to S3
-		fileURL, err := awsHandlers.UploadToS3(file, handler)
+		fileURL, err := awsHandlers.UploadToS3(file, handler, TEST_USER_ID)
 		if err != nil {
 			http.Error(w, "Failed to upload file to S3", http.StatusInternalServerError)
 			return

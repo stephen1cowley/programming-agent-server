@@ -26,7 +26,7 @@ func InitS3(cfg aws.Config) {
 }
 
 // UploadToS3 uploads the file to S3 and returns the file URL
-func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, error) {
+func UploadToS3(file multipart.File, handler *multipart.FileHeader, userID string) (string, error) {
 	// Read file content
 	size := handler.Size
 	buffer := make([]byte, size)
@@ -36,7 +36,7 @@ func UploadToS3(file multipart.File, handler *multipart.FileHeader) (string, err
 	fileBytes := bytes.NewReader(buffer)
 	fileType := http.DetectContentType(buffer)
 	fileName := filepath.Base(handler.Filename)
-	s3Path := "uploads/" + fileName
+	s3Path := "uploads/" + userID + "/" + fileName
 
 	// Upload the file to S3
 	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
