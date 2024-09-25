@@ -57,7 +57,7 @@ func ApiAgent() {
 
 	// Now we can begin the conversation by opening up the server!
 	http.HandleFunc("/api/message", apiMessageHandler)
-	http.HandleFunc("/api/restart", apiRestartHandler)
+	http.Handle("/api/restart", corsMiddleware(http.HandlerFunc(apiRestartHandler)))
 	http.HandleFunc("/api/upload", apiUploadHandler)
 	http.HandleFunc("/api/imdel", apiImdelHandler)
 
