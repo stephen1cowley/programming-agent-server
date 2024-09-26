@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.35
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.6
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.35.1
+	github.com/aws/aws-sdk-go-v2/service/ecr v1.35.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.1
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.32.9
 	github.com/joho/godotenv v1.5.1
@@ -22,6 +23,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.18 // indirect
 	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.23.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ecs v1.46.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.3.20 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.9.19 // indirect
