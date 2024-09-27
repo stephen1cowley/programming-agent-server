@@ -57,10 +57,10 @@ func pushDockerImage(imageName, ecrRepo string) error {
 	// if err := cdCmd.Run(); err != nil {
 	// 	return err
 	// }
-	tagCmd := exec.Command("docker", "tag", imageName, ecrRepo)
+	tagCmd := exec.Command("sudo", "docker", "tag", imageName, ecrRepo)
 	if err := tagCmd.Run(); err != nil {
 		return err
 	}
-	pushCmd := exec.Command("docker", "push", ecrRepo)
+	pushCmd := exec.Command("sudo", "docker", "push", ecrRepo)
 	return pushCmd.Run()
 }
