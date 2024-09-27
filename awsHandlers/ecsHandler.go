@@ -60,9 +60,9 @@ func runFargateTask(cfg aws.Config, clusterName, taskDefinitionName, subnetID, s
 func DeployReactApp(cfg aws.Config) error {
 	imageName := "my-test-image"
 	ecrRepo := "211125355525.dkr.ecr.eu-west-2.amazonaws.com/programming-agent-ui:latest"
-	clusterName := ""
-	subnetID := ""
-	securityGroupID := ""
+	// clusterName := ""
+	// subnetID := ""
+	// securityGroupID := ""
 
 	err := getECRLogin(cfg)
 	if err != nil {
@@ -78,15 +78,18 @@ func DeployReactApp(cfg aws.Config) error {
 		return err
 	}
 
-	_, err = registerTaskDefinition(cfg, imageName, ecrRepo)
-	if err != nil {
-		return err
-	}
-
-	_, err = runFargateTask(cfg, clusterName, imageName, subnetID, securityGroupID)
-	if err != nil {
-		return err
-	}
-
 	return nil
+
+	// First test up to here -- can we build a docker image and push it?
+
+	// _, err = registerTaskDefinition(cfg, imageName, ecrRepo)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// _, err = runFargateTask(cfg, clusterName, imageName, subnetID, securityGroupID)
+	// if err != nil {
+	// 	return err
+	// }
+
 }
