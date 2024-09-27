@@ -276,12 +276,6 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json")
 
-		// Update the UserState now that messages have been added and file contents changed
-		err = awsHandlers.DynamoPutUser(*currUserState)
-		if err != nil {
-			log.Printf("Failed to add fresh user %v", err)
-		}
-
 		if currUserState.FargateTaskARN != "" {
 			// i.e. there is a Fargate task running
 			awsHandlers.StopPreviousTask(cfg, ECS_CLUSTER_NAME, currUserState.FargateTaskARN)
@@ -292,6 +286,12 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Deploy Fargate App Error: %v\n", err)
 		} else {
 			currUserState.FargateTaskARN = newArn
+		}
+
+		// Update the UserState now that messages have been added and file contents changed
+		err = awsHandlers.DynamoPutUser(*currUserState)
+		if err != nil {
+			log.Printf("Failed to add fresh user %v", err)
 		}
 
 		// Create output and respond (same as input schema for now...)
