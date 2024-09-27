@@ -29,7 +29,13 @@ func getECRLogin(cfg aws.Config) error {
 	registry := *authData.ProxyEndpoint
 
 	cmd := exec.Command("docker", "login", "--username", credentials[0], "--password", credentials[1], registry)
-	return cmd.Run()
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("docker login failed: %v\noutput: %s", err, string(output))
+	}
+
+	return nil
 }
 
 func buildDockerImage(imageName string) error {
