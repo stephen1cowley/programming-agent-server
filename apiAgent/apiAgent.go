@@ -40,7 +40,6 @@ type deleteFileSchema struct {
 const TEST_USER_ID = "123"
 const ECS_CLUSTER_NAME = "ProjectCluster2"
 
-var cfg aws.Config
 var apiKey string
 var client openai.Client
 var startSysMsg = openai.ChatCompletionMessage{
@@ -145,8 +144,13 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	var currUserState *awsHandlers.UserState
 	var err error
+	var cfg aws.Config
 
 	if r.Method == http.MethodPost {
+		cfg, err = config.LoadDefaultConfig(context.TODO(), config.WithRegion("eu-west-2"))
+		if err != nil {
+			log.Fatalf("unable to load SDK config, %v", err)
+		}
 		// Get the previous UserState
 		currUserState, err = awsHandlers.DynamoGetUser(TEST_USER_ID)
 		if err != nil {
