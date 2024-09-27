@@ -28,7 +28,9 @@ func getECRLogin(cfg aws.Config) error {
 	credentials := strings.Split(string(decodedToken), ":")
 	registry := *authData.ProxyEndpoint
 
-	cmd := exec.Command("docker", "login", "--username", credentials[0], "--password", credentials[1], registry)
+	myRegistry := "211125355525.dkr.ecr.eu-west-2.amazonaws.com"
+
+	cmd := exec.Command("docker", "login", "--username", credentials[0], "--password", credentials[1], myRegistry)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
