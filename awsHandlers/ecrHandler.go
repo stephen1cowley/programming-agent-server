@@ -39,7 +39,17 @@ func buildDockerImage(imageName string) error {
 		return err
 	}
 	cmd := exec.Command("docker", "build", "-t", imageName, ".")
-	return cmd.Run()
+
+	// Capture the combined stdout and stderr output
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Error executing docker build: %v\n", err)
+		fmt.Printf("Docker build output: %s\n", string(output)) // Output error details
+		return err
+	}
+
+	fmt.Printf("Docker build output: %s\n", string(output))
+	return nil
 }
 
 func pushDockerImage(imageName, ecrRepo string) error {

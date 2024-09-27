@@ -17,6 +17,6 @@ func main() {
 
 	err = awsHandlers.DeployReactApp(cfg)
 	if err != nil {
-		fmt.Printf("Error %v", err)
+		fmt.Printf("Error %v\n", err)
 	}
 }
