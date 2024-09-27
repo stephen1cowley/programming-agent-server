@@ -61,9 +61,9 @@ func runFargateTask(cfg aws.Config, clusterName, taskDefinitionName, subnetID, s
 func DeployReactApp(cfg aws.Config) error {
 	imageName := "programming-agent-ui"
 	ecrRepo := "211125355525.dkr.ecr.eu-west-2.amazonaws.com/programming-agent-ui:latest"
-	// clusterName := ""
-	// subnetID := ""
-	// securityGroupID := ""
+	clusterName := "ProjectCluster2"
+	subnetID := "subnet-05b3b838935e29eeb"
+	securityGroupID := "sg-07d875c0a076ceeba"
 
 	err := getECRLogin(cfg)
 	if err != nil {
@@ -88,10 +88,12 @@ func DeployReactApp(cfg aws.Config) error {
 
 	// Next: can we register a task definition?
 
-	// _, err = runFargateTask(cfg, clusterName, imageName, subnetID, securityGroupID)
-	// if err != nil {
-	// 	return err
-	// }
+	_, err = runFargateTask(cfg, clusterName, imageName, subnetID, securityGroupID)
+	if err != nil {
+		return err
+	}
+
+	// Brill, now lets run the Fargate Task!!
 
 	return nil
 
