@@ -59,7 +59,7 @@ func runFargateTask(cfg aws.Config, clusterName, taskDefinitionName, subnetID, s
 	return client.RunTask(context.TODO(), input)
 }
 
-func DeployReactApp(cfg aws.Config) error {
+func DeployReactApp(cfg aws.Config) (newArn string, output error) {
 	imageName := "programming-agent-ui"
 	ecrRepo := "211125355525.dkr.ecr.eu-west-2.amazonaws.com/programming-agent-ui:latest"
 	clusterName := "ProjectCluster2"
@@ -68,33 +68,33 @@ func DeployReactApp(cfg aws.Config) error {
 
 	err := getECRLogin(cfg)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// Build, push, and deploy
 	if err := buildDockerImage(imageName); err != nil {
-		return err
+		return "", err
 	}
 
 	if err := pushDockerImage(imageName, ecrRepo); err != nil {
-		return err
+		return "", err
 	}
 
 	_, err = registerTaskDefinition(cfg, imageName, ecrRepo)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	taskOutput, err := runFargateTask(cfg, clusterName, imageName, subnetID, securityGroupID)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	taskARN := *taskOutput.Tasks[0].TaskArn
 
 	fmt.Println(taskARN)
 
-	return nil
+	return taskARN, nil
 
 }
 

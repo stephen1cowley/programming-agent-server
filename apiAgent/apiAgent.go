@@ -287,9 +287,11 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			awsHandlers.StopPreviousTask(cfg, ECS_CLUSTER_NAME, currUserState.FargateTaskARN)
 		}
 
-		err = awsHandlers.DeployReactApp(cfg)
+		newArn, err := awsHandlers.DeployReactApp(cfg)
 		if err != nil {
 			log.Printf("Deploy Fargate App Error: %v\n", err)
+		} else {
+			currUserState.FargateTaskARN = newArn
 		}
 
 		// Create output and respond (same as input schema for now...)
