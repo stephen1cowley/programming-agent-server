@@ -14,7 +14,7 @@ type DirectoryState struct {
 	S3Images   []string
 }
 
-// CreateSysMsgState formulates a user message to be sent each time to the LLM
+// CreateSysMsgState formulates a user message to be sent each time to the LLM.
 func (cd DirectoryState) CreateSysMsgState() (sysMsg string) {
 	if len(cd.S3Images) == 0 {
 		sysMsg += "Currently, there are NO images in the S3 folder."
