@@ -35,7 +35,7 @@ func getECRLogin(cfg aws.Config) error {
 		return fmt.Errorf("docker login failed: %v\noutput: %s", err, string(output))
 	}
 
-	fmt.Printf("Docker login %s %s successful for registry: %s\n", credentials[0], credentials[1], registry)
+	fmt.Printf("Docker login USERNAME: %s \n\n PASSWORD: %s\n\n successful for registry: %s\n", credentials[0], credentials[1], registry)
 	return nil
 }
 
