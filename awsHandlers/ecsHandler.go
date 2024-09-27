@@ -33,6 +33,7 @@ func registerTaskDefinition(cfg aws.Config, taskDefinitionName, ecrImage string)
 		RequiresCompatibilities: []ecstypes.Compatibility{ecstypes.CompatibilityFargate},
 		Cpu:                     aws.String("256"),
 		Memory:                  aws.String("512"),
+		ExecutionRoleArn:        aws.String("arn:aws:iam::211125355525:role/MyFargateExecutionRole"),
 	}
 
 	return client.RegisterTaskDefinition(context.TODO(), input)
