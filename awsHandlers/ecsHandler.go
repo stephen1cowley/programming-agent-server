@@ -2,6 +2,7 @@ package awsHandlers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
@@ -88,13 +89,26 @@ func DeployReactApp(cfg aws.Config) error {
 
 	// Next: can we register a task definition?
 
-	_, err = runFargateTask(cfg, clusterName, imageName, subnetID, securityGroupID)
+	taskOutput, err := runFargateTask(cfg, clusterName, imageName, subnetID, securityGroupID)
 	if err != nil {
 		return err
 	}
+
+	taskARN := *taskOutput.Tasks[0].TaskArn
+
+	fmt.Println(taskARN)
 
 	// Brill, now lets run the Fargate Task!!
 
 	return nil
 
+}
+
+func stopPreviousTask(cfg aws.Config, cluster string, taskArn string) error {
+	client := ecs.NewFromConfig(cfg)
+	_, err := client.StopTask(context.TODO(), &ecs.StopTaskInput{
+		Cluster: aws.String(cluster),
+		Task:    aws.String(taskArn),
+	})
+	return err
 }
