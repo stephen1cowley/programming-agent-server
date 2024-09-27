@@ -57,7 +57,7 @@ func runFargateTask(cfg aws.Config, clusterName, taskDefinitionName, subnetID, s
 	return client.RunTask(context.TODO(), input)
 }
 
-func deployReactApp(cfg aws.Config) error {
+func DeployReactApp(cfg aws.Config) error {
 	imageName := "my-test-image"
 	ecrRepo := "211125355525.dkr.ecr.eu-west-2.amazonaws.com/programming-agent-ui:latest"
 	clusterName := ""
