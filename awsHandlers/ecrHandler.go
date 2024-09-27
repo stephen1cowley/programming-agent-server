@@ -3,6 +3,8 @@ package awsHandlers
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -31,10 +33,11 @@ func getECRLogin(cfg aws.Config) error {
 }
 
 func buildDockerImage(imageName string) error {
-	// cdCmd := exec.Command("cd", "~/my-react-app")
-	// if err := cdCmd.Run(); err != nil {
-	// 	return err
-	// }
+	err := os.Chdir("/path/to/directory")
+	if err != nil {
+		fmt.Println("Error changing directory:", err)
+		return err
+	}
 	cmd := exec.Command("docker", "build", "-t", imageName, ".")
 	return cmd.Run()
 }
