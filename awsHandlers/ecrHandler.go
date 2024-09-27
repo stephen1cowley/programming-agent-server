@@ -38,7 +38,7 @@ func buildDockerImage(imageName string) error {
 		fmt.Println("Error changing directory:", err)
 		return err
 	}
-	cmd := exec.Command("docker", "build", "-t", imageName, ".")
+	cmd := exec.Command("sudo", "docker", "build", "-t", imageName, ".")
 
 	// Capture the combined stdout and stderr output
 	output, err := cmd.CombinedOutput()
