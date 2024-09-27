@@ -33,7 +33,7 @@ func getECRLogin(cfg aws.Config) error {
 }
 
 func buildDockerImage(imageName string) error {
-	err := os.Chdir("/path/to/directory")
+	err := os.Chdir("~/my-react-app")
 	if err != nil {
 		fmt.Println("Error changing directory:", err)
 		return err
