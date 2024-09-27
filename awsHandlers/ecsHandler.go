@@ -80,14 +80,10 @@ func DeployReactApp(cfg aws.Config) error {
 		return err
 	}
 
-	// First test up to here -- can we build a docker image and push it?
-
 	_, err = registerTaskDefinition(cfg, imageName, ecrRepo)
 	if err != nil {
 		return err
 	}
-
-	// Next: can we register a task definition?
 
 	taskOutput, err := runFargateTask(cfg, clusterName, imageName, subnetID, securityGroupID)
 	if err != nil {
@@ -98,13 +94,11 @@ func DeployReactApp(cfg aws.Config) error {
 
 	fmt.Println(taskARN)
 
-	// Brill, now lets run the Fargate Task!!
-
 	return nil
 
 }
 
-func stopPreviousTask(cfg aws.Config, cluster string, taskArn string) error {
+func StopPreviousTask(cfg aws.Config, cluster string, taskArn string) error {
 	client := ecs.NewFromConfig(cfg)
 	_, err := client.StopTask(context.TODO(), &ecs.StopTaskInput{
 		Cluster: aws.String(cluster),

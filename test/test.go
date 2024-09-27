@@ -15,8 +15,13 @@ func main() {
 		log.Fatalf("unable to load SDK config, %v", err)
 	}
 
-	err = awsHandlers.DeployReactApp(cfg)
+	// err = awsHandlers.DeployReactApp(cfg)
+	// if err != nil {
+	// 	fmt.Printf("Error %v\n", err)
+	// }
+
+	err = awsHandlers.StopPreviousTask(cfg, "ProjectCluster2", "arn:aws:ecs:eu-west-2:211125355525:task/ProjectCluster2/40d7aed7d3714973893bbb6c5baa3527")
 	if err != nil {
-		fmt.Printf("Error %v\n", err)
+		fmt.Printf("Error stopping task %v\n", err)
 	}
 }
