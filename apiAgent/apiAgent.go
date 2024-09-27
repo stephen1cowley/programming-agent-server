@@ -38,7 +38,9 @@ type deleteFileSchema struct {
 
 // Global variables
 const TEST_USER_ID = "123"
+const ECS_CLUSTER_NAME = "ProjectCluster2"
 
+var cfg aws.Config
 var apiKey string
 var client openai.Client
 var startSysMsg = openai.ChatCompletionMessage{
@@ -274,6 +276,16 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		err = awsHandlers.DynamoPutUser(*currUserState)
 		if err != nil {
 			log.Printf("Failed to add fresh user %v", err)
+		}
+
+		if currUserState.FargateTaskARN != "" {
+			// i.e. there is a Fargate task running
+			awsHandlers.StopPreviousTask(cfg, ECS_CLUSTER_NAME, currUserState.FargateTaskARN)
+		}
+
+		err = awsHandlers.DeployReactApp(cfg)
+		if err != nil {
+			log.Printf("Deploy Fargate App Error: %v\n", err)
 		}
 
 		// Create output and respond (same as input schema for now...)

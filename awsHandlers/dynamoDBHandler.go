@@ -20,6 +20,7 @@ type UserState struct {
 	UserID         string                         `json:"UserID"`
 	Messages       []openai.ChatCompletionMessage `json:"Messages"`
 	DirectoryState funcTools.DirectoryState       `json:"DirectoryState"`
+	FargateTaskARN string                         `json:"FargateTaskARN"`
 }
 
 var dynamoClient *dynamodb.Client
