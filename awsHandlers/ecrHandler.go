@@ -62,10 +62,6 @@ func buildDockerImage(imageName string) error {
 }
 
 func pushDockerImage(imageName, ecrRepo string) error {
-	// cdCmd := exec.Command("cd", "~/my-react-app")
-	// if err := cdCmd.Run(); err != nil {
-	// 	return err
-	// }
 	tagCmd := exec.Command("sudo", "docker", "tag", imageName, ecrRepo)
 	output, err := tagCmd.CombinedOutput()
 	if err != nil {
