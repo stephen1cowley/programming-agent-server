@@ -30,7 +30,7 @@ func getECRLogin(cfg aws.Config) error {
 
 	myRegistry := "211125355525.dkr.ecr.eu-west-2.amazonaws.com"
 
-	cmd := exec.Command("docker", "login", "--username", credentials[0], "--password", credentials[1], myRegistry)
+	cmd := exec.Command("sudo", "docker", "login", "--username", credentials[0], "--password", credentials[1], myRegistry)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
