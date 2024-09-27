@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ~/my-react-app
+cd /home/ubuntu/my-react-app/src
 
 npm install $1
 

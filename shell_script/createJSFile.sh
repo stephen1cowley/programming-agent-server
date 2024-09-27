@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Navigate to the directory
-cd ~/my-react-app/src
+cd /home/ubuntu/my-react-app/src
 
 # Create the .js file
 cat <<EOL > $1.js
