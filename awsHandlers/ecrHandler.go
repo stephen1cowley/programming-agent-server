@@ -58,9 +58,18 @@ func pushDockerImage(imageName, ecrRepo string) error {
 	// 	return err
 	// }
 	tagCmd := exec.Command("sudo", "docker", "tag", imageName, ecrRepo)
-	if err := tagCmd.Run(); err != nil {
+	output, err := tagCmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Error executing docker tag: %v\n", err)
+		fmt.Printf("Docker tag output: %s\n", string(output)) // Output error details
 		return err
 	}
 	pushCmd := exec.Command("sudo", "docker", "push", ecrRepo)
-	return pushCmd.Run()
+	output, err = pushCmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Error executing docker push: %v\n", err)
+		fmt.Printf("Docker push output: %s\n", string(output)) // Output error details
+		return err
+	}
+	return nil
 }
