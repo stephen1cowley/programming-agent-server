@@ -98,24 +98,25 @@ func onRestart() error {
 		log.Printf("Failed to find user of given credentials %v\n", err)
 	}
 
-	if currUserState.FargateTaskARN != "" {
-		// i.e. there is a Fargate task running
-		awsHandlers.StopPreviousTask(cfg, ECS_CLUSTER_NAME, currUserState.FargateTaskARN)
+	freshUserState := awsHandlers.UserState{}
+	freshUserState.UserID = TEST_USER_ID
+
+	freshUserState.FargateTaskARN = currUserState.FargateTaskARN
+
+	if currUserState.FargateTaskARN == "" {
+		// i.e. there is no Fargate task running
+		newArn, err := awsHandlers.DeployReactApp(cfg)
+		if err != nil {
+			log.Printf("Deploy Fargate App Error: %v\n", err)
+		} else {
+			currUserState.FargateTaskARN = newArn
+		}
 	}
 
 	// Concurrently create an S3 client and DynamoDB client
 	go awsHandlers.InitS3(cfg)
 
-	freshUserState := awsHandlers.UserState{}
-	freshUserState.UserID = TEST_USER_ID
-
-	newArn, err := awsHandlers.DeployReactApp(cfg)
-	if err != nil {
-		log.Printf("Deploy Fargate App Error: %v\n", err)
-	} else {
-		currUserState.FargateTaskARN = newArn
-	}
-
+	// Update DynamoDB with the new user
 	err = awsHandlers.DynamoPutUser(freshUserState)
 	if err != nil {
 		log.Printf("Failed to add fresh user %v", err)
