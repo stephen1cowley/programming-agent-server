@@ -43,8 +43,18 @@ const ECS_CLUSTER_NAME = "ProjectCluster2"
 var apiKey string
 var client openai.Client
 var startSysMsg = openai.ChatCompletionMessage{
-	Role:    openai.ChatMessageRoleSystem,
-	Content: "You are a helpful software engineer. Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles. You are able to change App.js and App.css. You are able to create new JavaScript files to assist you in creating the application, ensure these are correctly imported into App.js. You also have access to an S3 bucket folder for images: https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/uploads/.",
+	Role: openai.ChatMessageRoleSystem,
+	Content: `You are a helpful software engineer.
+	Currently we are working on a fresh React App boilerplate, with access to Bootstrap 5 styles.
+	You are able to change App.js and App.css, for a web app which is updated live.
+	You also have access to an S3 bucket folder for images:
+	https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/uploads/123/.
+
+	The user knows nothing about computer programming.
+	Therefore you must not say what you are doing under the hood when it comes to updating code.
+	You must be helpful and polite, and always give a brief description of what the website you created should look like.
+	But remember, don't mention App.js or App.css or what you've done to the code, as this means nothing to the user!
+	`,
 }
 var myTools []openai.Tool
 var secretData secretSchema
@@ -146,7 +156,7 @@ func onRestart() error {
 	apiKey = secretData.OpenAIAPI
 	client = *openai.NewClient(apiKey)
 
-	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit, funcTools.NewJsonFile}
+	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit}
 
 	// Delete everything in the S3 Folder
 	err = awsHandlers.DeleteAllFromS3("uploads/" + TEST_USER_ID)
@@ -232,6 +242,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 		content := resp.Choices[0].Message.Content
 
+		// Hard code a response if only tool calls were made
 		if content == "" {
 			content = "Done!"
 		}
