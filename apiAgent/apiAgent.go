@@ -78,6 +78,8 @@ func onRestart() error {
 		return err
 	}
 
+	awsHandlers.InitDynamo(cfg)
+
 	var currUserState *awsHandlers.UserState
 
 	// Get the previous UserState
@@ -94,7 +96,6 @@ func onRestart() error {
 	// Concurrently create an S3 client and DynamoDB client
 	go awsHandlers.InitS3(cfg)
 
-	awsHandlers.InitDynamo(cfg)
 	freshUserState := awsHandlers.UserState{}
 	freshUserState.UserID = TEST_USER_ID
 
