@@ -232,6 +232,10 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 		content := resp.Choices[0].Message.Content
 
+		if content == "" {
+			content = "Done!"
+		}
+
 		tool_calls := resp.Choices[0].Message.ToolCalls
 
 		fmt.Println(content)
