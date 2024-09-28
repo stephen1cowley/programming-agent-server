@@ -57,7 +57,7 @@ func UploadToS3(file multipart.File, handler *multipart.FileHeader, userID strin
 	return fileURL, nil
 }
 
-func uploadFileToS3(filename string, content string) error {
+func UploadFileToS3(filename string, content string) error {
 	// Convert the string content to bytes
 	buf := bytes.NewBufferString(content)
 
@@ -140,4 +140,44 @@ func ListAllInS3(folderPath string) ([]string, error) {
 		fileContents = append(fileContents, *item.Key)
 	}
 	return fileContents, nil
+}
+
+// EditAppJS runs shell script to edit App.js
+func EditAppJS(AppJSCode string) {
+	// Run the shell script with the variable value
+	// cmd := exec.Command("/home/ubuntu/shell_script/editAppJS.sh", AppJSCode)
+	// output, err := cmd.Output()
+	// if err != nil {
+	// 	fmt.Println("Error:", err)
+	// 	return
+	// }
+
+	err := UploadFileToS3("App.js", AppJSCode)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	// Print the output from the shell script
+	// fmt.Println(string(output))
+}
+
+// EditAppCSS runs shell script to edit App.css
+func EditAppCSS(AppCSSCode string) {
+	// Run the shell script with the variable value
+	// cmd := exec.Command("/home/ubuntu/shell_script/editAppCSS.sh", AppCSSCode)
+	// output, err := cmd.Output()
+	// if err != nil {
+	// 	fmt.Println("Error:", err)
+	// 	return
+	// }
+
+	err := UploadFileToS3("App.css", AppCSSCode)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	// Print the output from the shell script
+	// fmt.Println(string(output))
 }

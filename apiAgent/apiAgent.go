@@ -78,12 +78,33 @@ func onRestart() error {
 		return err
 	}
 
+	var currUserState *awsHandlers.UserState
+
+	// Get the previous UserState
+	currUserState, err = awsHandlers.DynamoGetUser(TEST_USER_ID)
+	if err != nil {
+		log.Printf("Failed to find user of given credentials %v\n", err)
+	}
+
+	if currUserState.FargateTaskARN != "" {
+		// i.e. there is a Fargate task running
+		awsHandlers.StopPreviousTask(cfg, ECS_CLUSTER_NAME, currUserState.FargateTaskARN)
+	}
+
 	// Concurrently create an S3 client and DynamoDB client
 	go awsHandlers.InitS3(cfg)
 
 	awsHandlers.InitDynamo(cfg)
 	freshUserState := awsHandlers.UserState{}
 	freshUserState.UserID = TEST_USER_ID
+
+	newArn, err := awsHandlers.DeployReactApp(cfg)
+	if err != nil {
+		log.Printf("Deploy Fargate App Error: %v\n", err)
+	} else {
+		currUserState.FargateTaskARN = newArn
+	}
+
 	err = awsHandlers.DynamoPutUser(freshUserState)
 	if err != nil {
 		log.Printf("Failed to add fresh user %v", err)
@@ -144,13 +165,8 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	var currUserState *awsHandlers.UserState
 	var err error
-	var cfg aws.Config
 
 	if r.Method == http.MethodPost {
-		cfg, err = config.LoadDefaultConfig(context.TODO(), config.WithRegion("eu-west-2"))
-		if err != nil {
-			log.Fatalf("unable to load SDK config, %v", err)
-		}
 		// Get the previous UserState
 		currUserState, err = awsHandlers.DynamoGetUser(TEST_USER_ID)
 		if err != nil {
@@ -232,14 +248,14 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 			case "app_js_edit_func":
 				fmt.Println("Updating App.js ...")
 				json.Unmarshal([]byte(val.Function.Arguments), &editAppJSResp)
-				funcTools.EditAppJS(
+				awsHandlers.EditAppJS(
 					editAppJSResp.AppJSCode,
 				)
 				currUserState.DirectoryState.AppJSCode = editAppJSResp.AppJSCode
 			case "app_css_edit_func":
 				fmt.Println("Updating App.css ...")
 				json.Unmarshal([]byte(val.Function.Arguments), &editAppCSSResp)
-				funcTools.EditAppCSS(
+				awsHandlers.EditAppCSS(
 					editAppCSSResp.AppCSSCode,
 				)
 				currUserState.DirectoryState.AppCSSCode = editAppCSSResp.AppCSSCode
@@ -275,18 +291,6 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		})
 
 		w.Header().Set("Content-Type", "application/json")
-
-		// if currUserState.FargateTaskARN != "" {
-		// 	// i.e. there is a Fargate task running
-		// 	awsHandlers.StopPreviousTask(cfg, ECS_CLUSTER_NAME, currUserState.FargateTaskARN)
-		// }
-
-		newArn, err := awsHandlers.DeployReactApp(cfg)
-		if err != nil {
-			log.Printf("Deploy Fargate App Error: %v\n", err)
-		} else {
-			currUserState.FargateTaskARN = newArn
-		}
 
 		// Update the UserState now that messages have been added and file contents changed
 		err = awsHandlers.DynamoPutUser(*currUserState)

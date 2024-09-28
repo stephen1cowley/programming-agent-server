@@ -5,33 +5,45 @@ import (
 	"os/exec"
 )
 
-// EditAppJS runs shell script to edit App.js
-func EditAppJS(AppJSCode string) {
-	// Run the shell script with the variable value
-	cmd := exec.Command("/home/ubuntu/shell_script/editAppJS.sh", AppJSCode)
-	output, err := cmd.Output()
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
+// // EditAppJS runs shell script to edit App.js
+// func EditAppJS(AppJSCode string) {
+// 	// Run the shell script with the variable value
+// 	// cmd := exec.Command("/home/ubuntu/shell_script/editAppJS.sh", AppJSCode)
+// 	// output, err := cmd.Output()
+// 	// if err != nil {
+// 	// 	fmt.Println("Error:", err)
+// 	// 	return
+// 	// }
 
-	// Print the output from the shell script
-	fmt.Println(string(output))
-}
+// 	err := awsHandlers.UploadFileToS3("App.js", AppJSCode)
+// 	if err != nil {
+// 		fmt.Println("Error:", err)
+// 		return
+// 	}
 
-// EditAppCSS runs shell script to edit App.css
-func EditAppCSS(AppCSSCode string) {
-	// Run the shell script with the variable value
-	cmd := exec.Command("/home/ubuntu/shell_script/editAppCSS.sh", AppCSSCode)
-	output, err := cmd.Output()
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
+// 	// Print the output from the shell script
+// 	// fmt.Println(string(output))
+// }
 
-	// Print the output from the shell script
-	fmt.Println(string(output))
-}
+// // EditAppCSS runs shell script to edit App.css
+// func EditAppCSS(AppCSSCode string) {
+// 	// Run the shell script with the variable value
+// 	// cmd := exec.Command("/home/ubuntu/shell_script/editAppCSS.sh", AppCSSCode)
+// 	// output, err := cmd.Output()
+// 	// if err != nil {
+// 	// 	fmt.Println("Error:", err)
+// 	// 	return
+// 	// }
+
+// 	err := awsHandlers.UploadFileToS3("App.css", AppCSSCode)
+// 	if err != nil {
+// 		fmt.Println("Error:", err)
+// 		return
+// 	}
+
+// 	// Print the output from the shell script
+// 	// fmt.Println(string(output))
+// }
 
 // CreateJSFile runs shell script to create a new JS file
 func CreateJSFile(CreateJSFileArgs ArgsCreateFile) {
