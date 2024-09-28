@@ -15,7 +15,7 @@ import (
 
 // UserState holds the current state for a given user.
 // This includes the current back-and-forth with the AI,
-// as well as the current Directory state
+// as well as the current Directory state!
 type UserState struct {
 	UserID         string                         `json:"UserID"`
 	Messages       []openai.ChatCompletionMessage `json:"Messages"`
