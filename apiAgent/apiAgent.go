@@ -276,10 +276,10 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json")
 
-		if currUserState.FargateTaskARN != "" {
-			// i.e. there is a Fargate task running
-			awsHandlers.StopPreviousTask(cfg, ECS_CLUSTER_NAME, currUserState.FargateTaskARN)
-		}
+		// if currUserState.FargateTaskARN != "" {
+		// 	// i.e. there is a Fargate task running
+		// 	awsHandlers.StopPreviousTask(cfg, ECS_CLUSTER_NAME, currUserState.FargateTaskARN)
+		// }
 
 		newArn, err := awsHandlers.DeployReactApp(cfg)
 		if err != nil {
