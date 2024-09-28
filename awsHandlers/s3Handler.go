@@ -152,7 +152,7 @@ func EditAppJS(AppJSCode string) {
 	// 	return
 	// }
 
-	err := UploadFileToS3("App.js", AppJSCode)
+	err := UploadFileToS3("react-app-src/"+"App.js", AppJSCode)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -172,7 +172,7 @@ func EditAppCSS(AppCSSCode string) {
 	// 	return
 	// }
 
-	err := UploadFileToS3("App.css", AppCSSCode)
+	err := UploadFileToS3("react-app-src/"+"App.css", AppCSSCode)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
