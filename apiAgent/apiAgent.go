@@ -46,7 +46,7 @@ var client openai.Client
 var myTools []openai.Tool
 var secretData secretSchema
 
-// APiAgent sets up the Programming Agent http server on port 80.
+// APiAgent sets up the Programming Agent http server on port 80
 func ApiAgent() {
 	err := onRestart()
 	if err != nil {
