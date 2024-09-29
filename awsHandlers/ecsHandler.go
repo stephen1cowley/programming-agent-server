@@ -20,8 +20,8 @@ func registerTaskDefinition(cfg aws.Config, taskDefinitionName, ecrImage string)
 				Name:      aws.String(taskDefinitionName),
 				Image:     aws.String(ecrImage),
 				Essential: aws.Bool(true),
-				Memory:    aws.Int32(1024),
-				Cpu:       256,
+				Memory:    aws.Int32(2048),
+				Cpu:       512,
 				PortMappings: []ecstypes.PortMapping{
 					{
 						ContainerPort: aws.Int32(80),
@@ -32,8 +32,8 @@ func registerTaskDefinition(cfg aws.Config, taskDefinitionName, ecrImage string)
 		},
 		NetworkMode:             ecstypes.NetworkModeAwsvpc,
 		RequiresCompatibilities: []ecstypes.Compatibility{ecstypes.CompatibilityFargate},
-		Cpu:                     aws.String("256"),
-		Memory:                  aws.String("1024"),
+		Cpu:                     aws.String("512"),
+		Memory:                  aws.String("2048"),
 		ExecutionRoleArn:        aws.String("arn:aws:iam::211125355525:role/MyFargateExecutionRole"),
 	}
 
