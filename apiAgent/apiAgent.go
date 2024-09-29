@@ -91,7 +91,12 @@ func onRestart() error {
 
 	freshUserState.FargateTaskARN = currUserState.FargateTaskARN
 
-	awsHandlers.DeployReactApp(cfg)
+	newArn, err := awsHandlers.DeployReactApp(cfg)
+	if err != nil {
+		log.Printf("Deploy Fargate App Error: %v\n", err)
+	} else {
+		log.Println("Success", newArn)
+	}
 
 	// if currUserState.FargateTaskARN == "" {
 	// 	// i.e. there is no Fargate task running
