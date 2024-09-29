@@ -161,7 +161,7 @@ func onRestart() error {
 func apiResetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		currUserID := r.Header.Get("username")
-		log.Println("Request from user", currUserID)
+		log.Println("RESET Request from user", currUserID)
 
 		// Get the previous UserState
 		currUserState, err := awsHandlers.DynamoGetUser(currUserID)
