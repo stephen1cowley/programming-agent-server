@@ -57,14 +57,15 @@ func UploadToS3(file multipart.File, handler *multipart.FileHeader, userID strin
 	return fileURL, nil
 }
 
-func UploadFileToS3(filename string, content string) error {
+func UploadFileToS3(fileName string, content string, userID string) error {
 	// Convert the string content to bytes
 	buf := bytes.NewBufferString(content)
+	s3Path := "uploads/" + userID + "/" + fileName
 
 	// Upload the file to S3
 	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(S3_BUCKET_APP),
-		Key:         aws.String(filename),
+		Key:         aws.String(s3Path),
 		Body:        buf,
 		ContentType: aws.String("text/plain"), // Change as needed
 	})
@@ -76,24 +77,26 @@ func UploadFileToS3(filename string, content string) error {
 }
 
 // DeleteFromS3 deletes a file from S3 given its path and returns an error if any occurs
-func DeleteFromS3(filePath string) error {
+func DeleteFromS3(fileName string, userID string) error {
 	// Delete the file from S3
+	s3Path := "uploads/" + userID + "/" + fileName
 	_, err := s3Client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
 		Bucket: aws.String(S3_BUCKET),
-		Key:    aws.String(filePath),
+		Key:    aws.String(s3Path),
 	})
 
 	if err != nil {
-		return fmt.Errorf("failed to delete object %s from S3: %v", filePath, err)
+		return fmt.Errorf("failed to delete object %s from S3: %v", s3Path, err)
 	}
 
-	log.Printf("Successfully deleted %s from S3", filePath)
+	log.Printf("Successfully deleted %s from S3", s3Path)
 	return nil
 }
 
 // DeleteAllFromS3 deletes ALL files from S3 given the folder and returns an error if any occurs
-func DeleteAllFromS3(folderPath string) error {
-	fileContents, err := ListAllInS3(folderPath)
+func DeleteAllFromS3(userID string) error {
+	s3Path := "uploads/" + userID
+	fileContents, err := ListAllInS3(s3Path)
 	if err != nil {
 		return fmt.Errorf("failed to list objects in folder: %v", err)
 	}
@@ -143,7 +146,7 @@ func ListAllInS3(folderPath string) ([]string, error) {
 }
 
 // EditAppJS runs shell script to edit App.js
-func EditAppJS(AppJSCode string) {
+func EditAppJS(AppJSCode string, userID string) {
 	// Run the shell script with the variable value
 	// cmd := exec.Command("/home/ubuntu/shell_script/editAppJS.sh", AppJSCode)
 	// output, err := cmd.Output()
@@ -152,7 +155,7 @@ func EditAppJS(AppJSCode string) {
 	// 	return
 	// }
 
-	err := UploadFileToS3("react-app-src/"+"App.js", AppJSCode)
+	err := UploadFileToS3("App.js", AppJSCode, userID)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -163,7 +166,7 @@ func EditAppJS(AppJSCode string) {
 }
 
 // EditAppCSS runs shell script to edit App.css
-func EditAppCSS(AppCSSCode string) {
+func EditAppCSS(AppCSSCode string, userID string) {
 	// Run the shell script with the variable value
 	// cmd := exec.Command("/home/ubuntu/shell_script/editAppCSS.sh", AppCSSCode)
 	// output, err := cmd.Output()
@@ -172,7 +175,7 @@ func EditAppCSS(AppCSSCode string) {
 	// 	return
 	// }
 
-	err := UploadFileToS3("react-app-src/"+"App.css", AppCSSCode)
+	err := UploadFileToS3("App.css", AppCSSCode, userID)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return

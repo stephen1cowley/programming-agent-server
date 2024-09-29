@@ -91,15 +91,15 @@ func onRestart() error {
 
 	freshUserState.FargateTaskARN = currUserState.FargateTaskARN
 
-	if currUserState.FargateTaskARN == "" {
-		// i.e. there is no Fargate task running
-		newArn, err := awsHandlers.DeployReactApp(cfg)
-		if err != nil {
-			log.Printf("Deploy Fargate App Error: %v\n", err)
-		} else {
-			currUserState.FargateTaskARN = newArn
-		}
-	}
+	// if currUserState.FargateTaskARN == "" {
+	// 	// i.e. there is no Fargate task running
+	// 	newArn, err := awsHandlers.DeployReactApp(cfg)
+	// 	if err != nil {
+	// 		log.Printf("Deploy Fargate App Error: %v\n", err)
+	// 	} else {
+	// 		currUserState.FargateTaskARN = newArn
+	// 	}
+	// }
 
 	// Concurrently create an S3 client and DynamoDB client
 	go awsHandlers.InitS3(cfg)
@@ -148,7 +148,7 @@ func onRestart() error {
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit}
 
 	// Delete everything in the S3 Folder
-	err = awsHandlers.DeleteAllFromS3("uploads/" + TEST_USER_ID)
+	err = awsHandlers.DeleteAllFromS3(TEST_USER_ID)
 	if err != nil {
 		fmt.Printf("Failed to delete all items in the S3 folder: %v", err)
 		return err
@@ -181,6 +181,12 @@ func apiResetHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to reset user info", http.StatusInternalServerError)
 			log.Printf("Failed to reset user info %v", err)
 		}
+
+		err = awsHandlers.DeleteAllFromS3(currUserID)
+		if err != nil {
+			http.Error(w, "Failed to delete all images from S3", http.StatusInternalServerError)
+			log.Printf("Failed to delete all items in the S3 folder: %v\n", err)
+		}
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		log.Println(w, "Method not allowed")
@@ -188,22 +194,6 @@ func apiResetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
-	var startSysMsg = openai.ChatCompletionMessage{
-		Role: openai.ChatMessageRoleSystem,
-		Content: `You are a helpful software engineer.
-		Currently we are working on a fresh React App boilerplate, with access to react-bootstrap, bootstrap and react-router-dom modules.
-		You are able to change App.js and App.css, for a web app which is updated live.
-	
-		The user knows nothing about computer programming.
-		Therefore you must not say what you are doing under the hood when it comes to updating code.
-		You must be helpful and polite, and always give a brief description of what the website you created should look like.
-		But remember, don't mention App.js or App.css or what you've done to the code, as this means nothing to the user!
-
-		You also have access to an S3 bucket folder for images https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/uploads/
-		
-		` + TEST_USER_ID + "/.",
-	}
-
 	var editAppJSResp funcTools.ArgsAppJS
 	var editAppCSSResp funcTools.ArgsAppCSS
 	var newFileResp funcTools.ArgsCreateFile
@@ -214,6 +204,22 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		currUserID := r.Header.Get("username")
 		log.Println("Request from user", currUserID)
+
+		var startSysMsg = openai.ChatCompletionMessage{
+			Role: openai.ChatMessageRoleSystem,
+			Content: `You are a helpful software engineer.
+			Currently we are working on a fresh React App boilerplate, with access to react-bootstrap, bootstrap and react-router-dom modules.
+			You are able to change App.js and App.css, for a web app which is updated live.
+		
+			The user knows nothing about computer programming.
+			Therefore you must not say what you are doing under the hood when it comes to updating code.
+			You must be helpful and polite, and always give a brief description of what the website you created should look like.
+			But remember, don't mention App.js or App.css or what you've done to the code, as this means nothing to the user!
+	
+			You also have access to an S3 bucket folder for images https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/uploads/
+			
+			` + currUserID + "/.",
+		}
 
 		// Get the previous UserState
 		currUserState, err = awsHandlers.DynamoGetUser(currUserID)
@@ -303,6 +309,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 				json.Unmarshal([]byte(val.Function.Arguments), &editAppJSResp)
 				awsHandlers.EditAppJS(
 					editAppJSResp.AppJSCode,
+					currUserID,
 				)
 				currUserState.DirectoryState.AppJSCode = editAppJSResp.AppJSCode
 			case "app_css_edit_func":
@@ -310,6 +317,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 				json.Unmarshal([]byte(val.Function.Arguments), &editAppCSSResp)
 				awsHandlers.EditAppCSS(
 					editAppCSSResp.AppCSSCode,
+					currUserID,
 				)
 				currUserState.DirectoryState.AppCSSCode = editAppCSSResp.AppCSSCode
 			case "new_js_file_func":
@@ -381,6 +389,9 @@ func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 
 func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
+		currUserID := r.Header.Get("username")
+		log.Println("Request from user", currUserID)
+
 		var deleteRequest deleteFileSchema
 		err := json.NewDecoder(r.Body).Decode(&deleteRequest)
 		if err != nil {
@@ -389,7 +400,7 @@ func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		fileToDelete := deleteRequest.FileName
-		err = awsHandlers.DeleteFromS3(fileToDelete)
+		err = awsHandlers.DeleteFromS3(fileToDelete, currUserID)
 		if err != nil {
 			http.Error(w, "Error deleting file", http.StatusInternalServerError)
 			log.Println("Error deleting file, ", err)
@@ -404,6 +415,9 @@ func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
 
 func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
+		currUserID := r.Header.Get("username")
+		log.Println("Request from user", currUserID)
+
 		// Parse the form with a max size of 10MB
 		err := r.ParseMultipartForm(10 << 20) // 10 MB
 		if err != nil {
@@ -419,7 +433,7 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		// Upload to S3
-		fileURL, err := awsHandlers.UploadToS3(file, handler, TEST_USER_ID)
+		fileURL, err := awsHandlers.UploadToS3(file, handler, currUserID)
 		if err != nil {
 			http.Error(w, "Failed to upload file to S3", http.StatusInternalServerError)
 			return
