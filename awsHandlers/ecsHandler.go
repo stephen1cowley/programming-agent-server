@@ -20,7 +20,7 @@ func registerTaskDefinition(cfg aws.Config, taskDefinitionName, ecrImage string)
 				Name:      aws.String(taskDefinitionName),
 				Image:     aws.String(ecrImage),
 				Essential: aws.Bool(true),
-				Memory:    aws.Int32(512),
+				Memory:    aws.Int32(1024),
 				Cpu:       256,
 				PortMappings: []ecstypes.PortMapping{
 					{
