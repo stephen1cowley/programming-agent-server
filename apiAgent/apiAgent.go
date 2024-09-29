@@ -87,7 +87,7 @@ func onRestart() error {
 	}
 
 	freshUserState := awsHandlers.UserState{}
-	freshUserState.UserID = TEST_USER_ID
+	freshUserState.UserID = "admin2"
 
 	freshUserState.FargateTaskARN = currUserState.FargateTaskARN
 
