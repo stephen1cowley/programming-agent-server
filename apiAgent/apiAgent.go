@@ -169,8 +169,8 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		You must be helpful and polite, and always give a brief description of what the website you created should look like.
 		But remember, don't mention App.js or App.css or what you've done to the code, as this means nothing to the user!
 
-		You also have access to an S3 bucket folder for images:
-		https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/uploads/
+		You also have access to an S3 bucket folder for images https://my-programming-agent-img-store.s3.eu-west-2.amazonaws.com/uploads/
+		
 		` + TEST_USER_ID + "/.",
 	}
 
@@ -182,6 +182,8 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	if r.Method == http.MethodPost {
+		log.Println(r.Header.Get("username"))
+
 		// Get the previous UserState
 		currUserState, err = awsHandlers.DynamoGetUser(TEST_USER_ID)
 		if err != nil {
