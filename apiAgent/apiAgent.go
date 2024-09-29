@@ -91,15 +91,15 @@ func onRestart() error {
 
 	freshUserState.FargateTaskARN = currUserState.FargateTaskARN
 
-	// if currUserState.FargateTaskARN == "" {
-	// 	// i.e. there is no Fargate task running
-	// 	newArn, err := awsHandlers.DeployReactApp(cfg)
-	// 	if err != nil {
-	// 		log.Printf("Deploy Fargate App Error: %v\n", err)
-	// 	} else {
-	// 		currUserState.FargateTaskARN = newArn
-	// 	}
-	// }
+	if currUserState.FargateTaskARN == "" {
+		// i.e. there is no Fargate task running
+		newArn, err := awsHandlers.DeployReactApp(cfg)
+		if err != nil {
+			log.Printf("Deploy Fargate App Error: %v\n", err)
+		} else {
+			currUserState.FargateTaskARN = newArn
+		}
+	}
 
 	// Concurrently create an S3 client and DynamoDB client
 	go awsHandlers.InitS3(cfg)
