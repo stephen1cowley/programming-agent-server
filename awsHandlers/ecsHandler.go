@@ -9,7 +9,7 @@ import (
 	ecstypes "github.com/aws/aws-sdk-go-v2/service/ecs/types"
 )
 
-// registerTaskDefinition registers an ECS task definition for Fargate using the provided ECR image.
+// registerTaskDefinition registers an ECS task definition for Fargate using the provided ECR image
 func registerTaskDefinition(cfg aws.Config, taskDefinitionName, ecrImage string) (*ecs.RegisterTaskDefinitionOutput, error) {
 	client := ecs.NewFromConfig(cfg)
 
