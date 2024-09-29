@@ -58,6 +58,7 @@ func ApiAgent() {
 	http.Handle("/api/restart", corsMiddleware(http.HandlerFunc(apiRestartHandler)))
 	http.Handle("/api/upload", corsMiddleware(http.HandlerFunc(apiUploadHandler)))
 	http.Handle("/api/imdel", corsMiddleware(http.HandlerFunc(apiImdelHandler)))
+	http.Handle("/api/reset", corsMiddleware(http.HandlerFunc(apiResetHandler)))
 
 	log.Println("Server listening on :80")
 	err = http.ListenAndServe(":80", nil)
@@ -157,6 +158,35 @@ func onRestart() error {
 	return nil
 }
 
+func apiResetHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		currUserID := r.Header.Get("username")
+		log.Println("Request from user", currUserID)
+
+		// Get the previous UserState
+		currUserState, err := awsHandlers.DynamoGetUser(currUserID)
+		if err != nil {
+			http.Error(w, "Failed to find user of given credentials", http.StatusInternalServerError)
+			log.Printf("Failed to find user of given credentials %v\n", err)
+			return
+		}
+
+		// Reset everything other than the UserID and the Fargate task
+		freshUserState := awsHandlers.UserState{}
+		freshUserState.UserID = currUserState.UserID
+		freshUserState.FargateTaskARN = currUserState.FargateTaskARN
+
+		err = awsHandlers.DynamoPutUser(freshUserState)
+		if err != nil {
+			http.Error(w, "Failed to reset user info", http.StatusInternalServerError)
+			log.Printf("Failed to reset user info %v", err)
+		}
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		log.Println(w, "Method not allowed")
+	}
+}
+
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	var startSysMsg = openai.ChatCompletionMessage{
 		Role: openai.ChatMessageRoleSystem,
@@ -182,10 +212,11 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	if r.Method == http.MethodPost {
-		log.Println(r.Header.Get("username"))
+		currUserID := r.Header.Get("username")
+		log.Println("Request from user", currUserID)
 
 		// Get the previous UserState
-		currUserState, err = awsHandlers.DynamoGetUser(TEST_USER_ID)
+		currUserState, err = awsHandlers.DynamoGetUser(currUserID)
 		if err != nil {
 			http.Error(w, "Failed to find user of given credentials", http.StatusInternalServerError)
 			log.Printf("Failed to find user of given credentials %v\n", err)
