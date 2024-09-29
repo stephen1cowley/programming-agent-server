@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os/exec"
 	"regexp"
 	"time"
 
@@ -78,25 +77,25 @@ func onRestart() error {
 
 	awsHandlers.InitDynamo(cfg)
 
-	var currUserState *awsHandlers.UserState
+	// var currUserState *awsHandlers.UserState
 
 	// Get the previous UserState
-	currUserState, err = awsHandlers.DynamoGetUser(TEST_USER_ID)
-	if err != nil {
-		log.Printf("Failed to find user of given credentials %v\n", err)
-	}
+	// currUserState, err = awsHandlers.DynamoGetUser(TEST_USER_ID)
+	// if err != nil {
+	// 	log.Printf("Failed to find user of given credentials %v\n", err)
+	// }
 
-	freshUserState := awsHandlers.UserState{}
-	freshUserState.UserID = "admin3"
+	// freshUserState := awsHandlers.UserState{}
+	// freshUserState.UserID = "admin3"
 
-	freshUserState.FargateTaskARN = currUserState.FargateTaskARN
+	// freshUserState.FargateTaskARN = currUserState.FargateTaskARN
 
-	newArn, err := awsHandlers.DeployReactApp(cfg)
-	if err != nil {
-		log.Printf("Deploy Fargate App Error: %v\n", err)
-	} else {
-		log.Println("Success", newArn)
-	}
+	// newArn, err := awsHandlers.DeployReactApp(cfg)
+	// if err != nil {
+	// 	log.Printf("Deploy Fargate App Error: %v\n", err)
+	// } else {
+	// 	log.Println("Success", newArn)
+	// }
 
 	// if currUserState.FargateTaskARN == "" {
 	// 	// i.e. there is no Fargate task running
@@ -112,19 +111,19 @@ func onRestart() error {
 	go awsHandlers.InitS3(cfg)
 
 	// Update DynamoDB with the new user
-	err = awsHandlers.DynamoPutUser(freshUserState)
-	if err != nil {
-		log.Printf("Failed to add fresh user %v", err)
-	}
+	// err = awsHandlers.DynamoPutUser(freshUserState)
+	// if err != nil {
+	// 	log.Printf("Failed to add fresh user %v", err)
+	// }
 
 	// Clean the React App source code
-	cmd := exec.Command("/home/ubuntu/shell_script/onStartup.sh")
-	output, err := cmd.Output()
-	if err != nil {
-		log.Printf("Output of onStartup.sh: %s", output)
-		log.Printf("Error: %v", err)
-		return err
-	}
+	// cmd := exec.Command("/home/ubuntu/shell_script/onStartup.sh")
+	// output, err := cmd.Output()
+	// if err != nil {
+	// 	log.Printf("Output of onStartup.sh: %s", output)
+	// 	log.Printf("Error: %v", err)
+	// 	return err
+	// }
 
 	// Create a Secrets Manager client
 	svc := secretsmanager.NewFromConfig(cfg)
@@ -153,13 +152,6 @@ func onRestart() error {
 	client = *openai.NewClient(apiKey)
 
 	myTools = []openai.Tool{funcTools.AppJSEdit, funcTools.AppCSSEdit}
-
-	// Delete everything in the S3 Folder
-	err = awsHandlers.DeleteAllFromS3(TEST_USER_ID)
-	if err != nil {
-		fmt.Printf("Failed to delete all items in the S3 folder: %v", err)
-		return err
-	}
 
 	// No errors on startup
 	return nil
