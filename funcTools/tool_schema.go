@@ -13,7 +13,7 @@ type ArgsAppCSS struct {
 	AppCSSCode string `json:"appcsscode"`
 }
 
-// Tool definition for editting the App.js file
+// Tool definition for editting the App.js file.
 var (
 	AppJSjsonSchema = jsonschema.Definition{
 		Type: jsonschema.Object,
