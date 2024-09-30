@@ -13,6 +13,10 @@ import (
 	funcTools "github.com/stephen1cowley/programming-agent-server/funcTools"
 )
 
+const (
+	DYNAMO_DB_TABLE = "programming-agent-users"
+)
+
 // UserState holds the current state for a given user.
 // This includes the current back-and-forth with the AI,
 // as well as the current Directory state.
@@ -40,7 +44,7 @@ func DynamoPutUser(user UserState) error {
 
 	// Create the input for PutItem
 	input := &dynamodb.PutItemInput{
-		TableName: aws.String("programming-agent-users"),
+		TableName: aws.String(DYNAMO_DB_TABLE),
 		Item:      av,
 	}
 
@@ -57,7 +61,7 @@ func DynamoPutUser(user UserState) error {
 func DynamoGetUser(userID string) (*UserState, error) {
 	// Create the input for GetItem
 	input := &dynamodb.GetItemInput{
-		TableName: aws.String("programming-agent-users"),
+		TableName: aws.String(DYNAMO_DB_TABLE),
 		Key: map[string]types.AttributeValue{
 			"UserID": &types.AttributeValueMemberS{Value: userID}, // Assuming UserID is the primary key
 		},
