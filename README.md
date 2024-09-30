@@ -29,7 +29,7 @@ The main frontend is an Nginx-hosted server hosting a React build, served at `ht
 
 The current user state is stored in DynamoDB, and the uploaded images are stored in another S3 bucket.
 
-Through the use of Application Load Balancers, serverless user-data storage, and Amazon Cognito, the architecture is scalable, allowing for multiple users. 
+Through the use of Application Load Balancers, serverless user-data storage, and Amazon Cognito, the architecture is scalable, allowing for multiple users. With some tweaks, it could possibly handle millions of global users.
 
 ## Installation
 ### Prerequisites
