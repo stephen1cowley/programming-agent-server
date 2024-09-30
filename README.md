@@ -51,6 +51,8 @@ To create the container that will listen to changes to S3, run a Docker containe
 
 The CORS headers added in `apiAgent/apiAgent.go` will need to be changed to allow localhost if running the frontend locally, or removed entirely if just a testing of the endpoints is wanted.
 
+Note also that currently, the OpenAI API key is securely extracted from Amazon Secrets manager. You may need to change the code to allow your method of extracting an OpenAI API key.
+
 This project contains functions in `awsHandlers/ecrHandler.go` and `awsHandlers/ecsHandler.go` that automate the creation of the container, but this is not required.
 
 You could utilise the YAML spec files to create an automated CI/CD pipeline with AWS CodePipeline, but this is not required.
