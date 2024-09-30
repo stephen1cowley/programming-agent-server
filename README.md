@@ -21,13 +21,15 @@ For the frontend repo, see the [Programming Agent UI](https://github.com/stephen
 
 ## Architecture
 
-The main front and back-end servers are AWS EC2 instances. The AI-created app is stored as a ECS Fargate container. This container makes periodic checks to see if the code in the Amazon S3 bucket has changed. This is changed on-demand by the backend, which comprises an OpenAI API GPT-4o invocation with access to tool calls.
+The main front and back-end servers are AWS EC2 instances. The AI-created app is served from an ECS Fargate container. This container makes periodic checks to see if the code in the Amazon S3 bucket has changed. This is changed on-demand by the Golang backend, which comprises an OpenAI API GPT-4o invocation with access to tool calls.
 
 ![architecture diagram](readmeFiles/arch.png)
 
-The main frontend is served at `https://stephencowley.com`, where users login with AWS Cognito. From then on, the username is included as a header to requests to the backend http server, `https://api.stephencowley.com`. The user visits their website creation at `https://username.stephencowley.com`.
+The main frontend is an Nginx-hosted server hosting a React build, served at `https://stephencowley.com` (note that the setup isn't in production at the moment). Users login with AWS Cognito. From then on, the username is included as a header in requests to the backend http server, `https://api.stephencowley.com`. The user's website creation is an npm development server (for quick rebuild speeds) in a Docker container at `https://username.stephencowley.com`.
 
 The current user state is stored in DynamoDB, and the uploaded images are stored in another S3 bucket.
+
+Through the use of Application Load Balancers, serverless user-data storage, and Amazon Cognito, the architecture is scalable, allowing for multiple users. 
 
 ## Installation
 ### Prerequisites
