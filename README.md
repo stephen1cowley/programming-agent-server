@@ -21,7 +21,13 @@ For the frontend repo, see the [Programming Agent UI](https://github.com/stephen
 
 ## Architecture
 
-![architecture diagram](readmeFiles/ProgrammingAgentDiagram.jpg)
+The main front and back-end servers are AWS EC2 instances. The AI-created app is stored as a ECS Fargate container. This makes periodic checks to see if the code in the Amazon S3 bucket has changed. This is changed on-demand by the backend, which comprises a ChatGPT invocation with access to tool calls.
+
+![architecture diagram](readmeFiles/arch.png)
+
+The main frontend is served at `https://stephencowley.com`, where users login with AWS Cognito. From then on, the username is included as a header to requests to the backend http server, `https://api.stephencowley.com`. The user visits their website creation at `https://username.stephencowley.com`.
+
+The current user state is stored in DynamoDB, and the uploaded images are stored in another S3 bucket.
 
 ## Installation
 ### Prerequisites
