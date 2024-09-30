@@ -21,7 +21,7 @@ For the frontend repo, see the [Programming Agent UI](https://github.com/stephen
 
 ## Architecture
 
-The main front and back-end servers are AWS EC2 instances. The AI-created app is stored as a ECS Fargate container. This makes periodic checks to see if the code in the Amazon S3 bucket has changed. This is changed on-demand by the backend, which comprises a ChatGPT invocation with access to tool calls.
+The main front and back-end servers are AWS EC2 instances. The AI-created app is stored as a ECS Fargate container. This container makes periodic checks to see if the code in the Amazon S3 bucket has changed. This is changed on-demand by the backend, which comprises an OpenAI API GPT-4o invocation with access to tool calls.
 
 ![architecture diagram](readmeFiles/arch.png)
 
