@@ -9,7 +9,15 @@ This repo contains the main backend code.
 For the frontend repo, see the [Programming Agent UI](https://github.com/stephen1cowley/programming-agent-ui). For the contents of the user app Docker container (editted live by the AI), see the [User React App](https://github.com/stephen1cowley/user-react-app).
 
 ## Features
+- Talk with a ChatGPT-like chat bot
+- Discuss changes you'd like to make to the app at each stage
+- Drag and drop your own images to be included in the app
 
+### Example
+![tutorial1](readmeFiles/tutorial1.png)
+![tutorial2](readmeFiles/tutorial2.png)
+![tutorial3](readmeFiles/tutorial3.png)
+![tutorial4](readmeFiles/tutorial4.png)
 
 ## Architecture
 
