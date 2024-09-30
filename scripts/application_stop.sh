@@ -4,3 +4,4 @@ if [ -f /home/ubuntu/server.pid ]; then
   kill $(cat /home/ubuntu/server.pid)
   rm /home/ubuntu/server.pid
 fi
+

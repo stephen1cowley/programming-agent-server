@@ -7,3 +7,4 @@ else
   echo "Server is not running."
   exit 1
 fi
+
