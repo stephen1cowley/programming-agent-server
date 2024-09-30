@@ -9,7 +9,3 @@ fi
 if [ -d "/home/ubuntu/server" ]; then
   rm -rf /home/ubuntu/server
 fi
-
-if [ -d "/home/ubuntu/shell_script" ]; then
-  rm -rf /home/ubuntu/shell_script
-fi

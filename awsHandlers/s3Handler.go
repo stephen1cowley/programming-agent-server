@@ -15,6 +15,7 @@ import (
 
 var s3Client *s3.Client
 
+// Hard-coded S3 names
 const (
 	S3_REGION     = "eu-west-2"
 	S3_BUCKET     = "my-programming-agent-img-store"
@@ -145,42 +146,20 @@ func ListAllInS3(folderPath string) ([]string, error) {
 	return fileContents, nil
 }
 
-// EditAppJS runs shell script to edit App.js
+// EditAppJS uploads App.js file to S3
 func EditAppJS(AppJSCode string, userID string) {
-	// Run the shell script with the variable value
-	// cmd := exec.Command("/home/ubuntu/shell_script/editAppJS.sh", AppJSCode)
-	// output, err := cmd.Output()
-	// if err != nil {
-	// 	fmt.Println("Error:", err)
-	// 	return
-	// }
-
 	err := UploadFileToS3("App.js", AppJSCode, userID)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
-
-	// Print the output from the shell script
-	// fmt.Println(string(output))
 }
 
-// EditAppCSS runs shell script to edit App.css
+// EditAppCSS uploads App.css file to S3
 func EditAppCSS(AppCSSCode string, userID string) {
-	// Run the shell script with the variable value
-	// cmd := exec.Command("/home/ubuntu/shell_script/editAppCSS.sh", AppCSSCode)
-	// output, err := cmd.Output()
-	// if err != nil {
-	// 	fmt.Println("Error:", err)
-	// 	return
-	// }
-
 	err := UploadFileToS3("App.css", AppCSSCode, userID)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
-
-	// Print the output from the shell script
-	// fmt.Println(string(output))
 }

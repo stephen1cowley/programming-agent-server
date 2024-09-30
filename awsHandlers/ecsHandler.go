@@ -40,6 +40,7 @@ func registerTaskDefinition(cfg aws.Config, taskDefinitionName, ecrImage string)
 	return client.RegisterTaskDefinition(context.TODO(), input)
 }
 
+// runFargateTask runs a particular AWS Fargate task
 func runFargateTask(cfg aws.Config, clusterName, taskDefinitionName, subnetID, securityGroupID string) (*ecs.RunTaskOutput, error) {
 	client := ecs.NewFromConfig(cfg)
 
@@ -59,6 +60,7 @@ func runFargateTask(cfg aws.Config, clusterName, taskDefinitionName, subnetID, s
 	return client.RunTask(context.TODO(), input)
 }
 
+// DeployReactApp builds and pushes a docker image to AWS ECR, and then registers and runs a Fargate task to run the image.
 func DeployReactApp(cfg aws.Config) (newArn string, output error) {
 	imageName := "programming-agent-ui"
 	ecrRepo := "211125355525.dkr.ecr.eu-west-2.amazonaws.com/programming-agent-ui:latest"
@@ -98,6 +100,7 @@ func DeployReactApp(cfg aws.Config) (newArn string, output error) {
 
 }
 
+// StopPreviousTask stops a particular ECS task that is currently running.
 func StopPreviousTask(cfg aws.Config, cluster string, taskArn string) error {
 	client := ecs.NewFromConfig(cfg)
 	_, err := client.StopTask(context.TODO(), &ecs.StopTaskInput{

@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 )
 
+// getECRLogin ensures the aws config directory is correctly set up with a token
 func getECRLogin(cfg aws.Config) error {
 	client := ecr.NewFromConfig(cfg)
 	result, err := client.GetAuthorizationToken(context.TODO(), &ecr.GetAuthorizationTokenInput{})
@@ -41,6 +42,7 @@ func getECRLogin(cfg aws.Config) error {
 	return nil
 }
 
+// buildDockerImage builds the image in the "/home/ubuntu/user-react-app" directory
 func buildDockerImage(imageName string) error {
 	err := os.Chdir("/home/ubuntu/user-react-app")
 	if err != nil {
@@ -61,6 +63,7 @@ func buildDockerImage(imageName string) error {
 	return nil
 }
 
+// pushDockerImage pushes a docker image to Amazon ECR
 func pushDockerImage(imageName, ecrRepo string) error {
 	tagCmd := exec.Command("sudo", "docker", "tag", imageName, ecrRepo)
 	output, err := tagCmd.CombinedOutput()

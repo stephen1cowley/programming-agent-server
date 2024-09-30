@@ -18,19 +18,23 @@ import (
 	funcTools "github.com/stephen1cowley/programming-agent-server/funcTools"
 )
 
+// msgsSchema is a single message, with role typically being "user" or "ai"
 type msgSchema struct {
 	Role string `json:"role"`
 	Text string `json:"text"`
 }
 
+// msgsSchema is a list of user and ai messages.
 type msgsSchema struct {
 	Messages []msgSchema `json:"messages"`
 }
 
+// secretSchema is the schema returned by the AWS Secrets Manager
 type secretSchema struct {
 	OpenAIAPI string `json:"OpenAIAPI"`
 }
 
+// deleteFileSchema is the schema of the incoming POST request to delete a file from S3.
 type deleteFileSchema struct {
 	FileName string `json:"fileName"`
 }
@@ -66,7 +70,7 @@ func ApiAgent() {
 	}
 }
 
-// onRestart initializes a variety of different variables and AWS settings
+// onRestart initializes a variety of different variables and AWS settings, upon reloading the frontend
 func onRestart() error {
 	// Load the Shared AWS Configuration (~/.aws/config)
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("eu-west-2"))
@@ -77,53 +81,8 @@ func onRestart() error {
 
 	awsHandlers.InitDynamo(cfg)
 
-	// var currUserState *awsHandlers.UserState
-
-	// Get the previous UserState
-	// currUserState, err = awsHandlers.DynamoGetUser(TEST_USER_ID)
-	// if err != nil {
-	// 	log.Printf("Failed to find user of given credentials %v\n", err)
-	// }
-
-	// freshUserState := awsHandlers.UserState{}
-	// freshUserState.UserID = "admin3"
-
-	// freshUserState.FargateTaskARN = currUserState.FargateTaskARN
-
-	// newArn, err := awsHandlers.DeployReactApp(cfg)
-	// if err != nil {
-	// 	log.Printf("Deploy Fargate App Error: %v\n", err)
-	// } else {
-	// 	log.Println("Success", newArn)
-	// }
-
-	// if currUserState.FargateTaskARN == "" {
-	// 	// i.e. there is no Fargate task running
-	// 	newArn, err := awsHandlers.DeployReactApp(cfg)
-	// 	if err != nil {
-	// 		log.Printf("Deploy Fargate App Error: %v\n", err)
-	// 	} else {
-	// 		currUserState.FargateTaskARN = newArn
-	// 	}
-	// }
-
 	// Concurrently create an S3 client and DynamoDB client
 	go awsHandlers.InitS3(cfg)
-
-	// Update DynamoDB with the new user
-	// err = awsHandlers.DynamoPutUser(freshUserState)
-	// if err != nil {
-	// 	log.Printf("Failed to add fresh user %v", err)
-	// }
-
-	// Clean the React App source code
-	// cmd := exec.Command("/home/ubuntu/shell_script/onStartup.sh")
-	// output, err := cmd.Output()
-	// if err != nil {
-	// 	log.Printf("Output of onStartup.sh: %s", output)
-	// 	log.Printf("Error: %v", err)
-	// 	return err
-	// }
 
 	// Create a Secrets Manager client
 	svc := secretsmanager.NewFromConfig(cfg)
@@ -157,6 +116,7 @@ func onRestart() error {
 	return nil
 }
 
+// apiResetHandler initializes a variety of different variables and AWS settings, upon pressing the reset button on the frontend
 func apiResetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		currUserID := r.Header.Get("username")
@@ -192,10 +152,11 @@ func apiResetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// apiMessageHandler formulates the query to ChatGPT and responds accordingly.
+// It is executed whenever a user sends a message to the AI.
 func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	var editAppJSResp funcTools.ArgsAppJS
 	var editAppCSSResp funcTools.ArgsAppCSS
-	var newFileResp funcTools.ArgsCreateFile
 
 	var currUserState *awsHandlers.UserState
 	var err error
@@ -301,7 +262,6 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 		content = re.ReplaceAllString(content, "")
 
 		for _, val := range tool_calls {
-		outerSwitch:
 			switch val.Function.Name {
 			case "app_js_edit_func":
 				fmt.Println("Updating App.js ...")
@@ -319,25 +279,6 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 					currUserID,
 				)
 				currUserState.DirectoryState.AppCSSCode = editAppCSSResp.AppCSSCode
-			case "new_js_file_func":
-				fmt.Println("Creating new JS file ...")
-				json.Unmarshal([]byte(val.Function.Arguments), &newFileResp)
-				funcTools.CreateJSFile(
-					newFileResp,
-				)
-				for i, file := range currUserState.DirectoryState.OtherFiles {
-					if newFileResp.FileName == file.FileName {
-						currUserState.DirectoryState.OtherFiles[i].FileCode = newFileResp.FileContent
-						break outerSwitch
-					}
-				}
-				// File doesn't yet exist in the list; append this new file.
-				currUserState.DirectoryState.OtherFiles = append(
-					currUserState.DirectoryState.OtherFiles,
-					funcTools.FileState{
-						FileName: newFileResp.FileName,
-						FileCode: newFileResp.FileContent,
-					})
 			}
 		}
 
@@ -371,6 +312,7 @@ func apiMessageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// apiRestartHandler handles requests that occur each time the frontend is reloaded
 func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPut {
 		err := onRestart()
@@ -386,6 +328,7 @@ func apiRestartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// apiImdelHandler handles requests to delete an image from S3.
 func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		currUserID := r.Header.Get("username")
@@ -412,6 +355,7 @@ func apiImdelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// apiUploadHandler handles requests to upload an image from S3.
 func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		currUserID := r.Header.Get("username")
@@ -445,6 +389,7 @@ func apiUploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// apiTestHandler handles health check requests of the ALB.
 func apiTestHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		w.WriteHeader(http.StatusOK)
@@ -455,6 +400,7 @@ func apiTestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// corsMiddleware adds necessary headers for CORS policy and preflight requests.
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers

@@ -27,4 +27,3 @@ artifacts:
     - server
     - appspec.yml
     - scripts/**
-    - shell_script/**

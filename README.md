@@ -8,11 +8,6 @@ git clone https://github.com/stephen1cowley/go-agent
 ```
 
 
-Grant executable permissions for the shellscript
-```
-chmod +x go-agent/shell_script/*
-```
-
 Then
 ```
 sudo apt-get install npm
